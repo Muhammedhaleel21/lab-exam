@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <script type="text/plain" id="raw-code">#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int absvalue(int x){
+	if(x < 0)
+		return -x;
+	return x;
+}
+
+int sstf(int req[], int n, int head){
+	int visited[10] = {0};
+	int total = 0;
+
+	for(int i=0; i<n; i++){
+		int min = 5000;
+		int pos = -1;
+
+		for(int j=0; j<n; j++){
+			if(!visited[j]){
+				int dist = absvalue(head - req[j]);
+		
+				if(dist < min){
+					min = dist;
+					pos = j;
+				}
+			}
+		}
+
+		visited[pos] = 1;
+		total += absvalue(head - req[pos]);
+		head = req[pos];
+	}
+	
+	return total;
+}
+
+
+int main(int argc, char *argv[]){
+	if(argc != 2){
+		printf("Usage: %s <initial head>\n", argv[0]);
+	}
+	
+	int head = atoi(argv[1]);
+	int req[10];
+	srand(time(NULL));
+
+	printf("Disk Requested:\n");
+	for(int i=0; i<10; i++){
+		req[i] = rand() % 5000;
+		printf("%d ", req[i]);
+	}
+
+	printf("\nSSTF Head Movement: %d\n", sstf(req, 10, head));
+
+	return 0;
+}</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>

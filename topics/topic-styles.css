@@ -1,0 +1,47 @@
+body {
+  background-color: #000000;
+  color: #ffffff;
+  font-family: sans-serif;
+  padding: 15px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+pre {
+  background-color: #1e1e1e;
+  border: 1px solid #2d2d2d;
+  border-radius: 6px;
+  padding: 18px;
+  margin: 0;
+  overflow-x: auto; /* Enables horizontal scrolling for long code lines */
+}
+
+code {
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #d4d4d4;   /* VS Code default light gray code text */
+  white-space: pre; /* Essential for keeping tab indents and preventing line wrapping */
+  tab-size: 4;
+  -moz-tab-size: 4;
+}
+
+/* Custom Scrollbar for premium dark editor UI */
+pre::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+pre::-webkit-scrollbar-track {
+  background: #1e1e1e;
+  border-radius: 6px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: #3e3e3e;
+  border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+  background: #4f4f4f;
+}

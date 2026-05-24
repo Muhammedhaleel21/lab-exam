@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <script type="text/plain" id="raw-code">#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int lru(int ref[], int n, int frames){
+	int f[10], timeArr[10];
+	int faults=0, t=0;
+
+	for(int i=0; i<frames; i++){
+		f[i] = -1;
+		timeArr[i] = 0;
+	}
+	
+	for(int i=0; i<n; i++){
+		int found = -1;
+
+		for(int j=0; j<frames; j++){
+			if(f[j] == ref[i]){
+				found = j;
+				break;
+			}
+		}
+
+		if(found != -1){
+			timeArr[found] = ++t;
+		}else{
+			int pos=0;
+			
+			for(int j=1; j<frames; j++){
+				if(timeArr[j] < timeArr[pos]){
+					pos = j;
+				}
+			}
+
+			f[pos] = ref[i];
+			timeArr[pos] = ++t;
+			faults++;
+		}
+	}
+
+	return faults;
+}
+
+int main(int argc, char *argv[]){
+	if(argc != 3){
+		printf("Usage: %s <length> <frames>", argv[0]);
+		return 0;
+	}
+
+	int n = atoi(argv[1]);
+	int frames = atoi(argv[2]);
+	
+	int ref[100];
+	srand(time(NULL));
+
+	printf("Reference String:\n");
+	for(int i=0; i<n; i++){
+		ref[i] = rand() % 10;
+		printf("%d ", ref[i]);
+	}
+
+	printf("/LRU Faults = %d", lru(ref, n, frames));
+
+	return 0;
+}</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>

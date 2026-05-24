@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <!-- Raw C code directly stored as unmodified character data -->
+  <script type="text/plain" id="raw-code">#include <stdio.h>
+
+int main(){
+	int n, m;
+
+	printf("Enter number of processes:");
+	scanf("%d", &n);
+
+	printf("Enter number of resources:");
+	scanf("%d", &m);
+
+	int allocation[10][10];
+	int max[10][10];
+	int need[10][10];
+	int available[10];
+
+	int finish[10] = {0};
+	int safeSeq[10];
+	int work[10];
+
+	int count = 0;
+
+	printf("\nEnter the allocation matrix:\n");
+	for(int i=0; i<n; i++){
+		for(int j=0; j<m; j++){
+			scanf("%d", &allocation[i][j]);
+		}
+	}
+
+	printf("\nEnter the max matrix:\n");
+	for(int i=0; i<n; i++){
+		for(int j=0; j<m; j++){
+			scanf("%d", &max[i][j]);
+		}
+	}
+
+	printf("\nEnter available matrix:\n");
+	for(int i=0; i<m; i++){
+		scanf("%d", &available[i]);
+	}
+
+
+	for(int i=0; i<n; i++){
+		for(int j=0; j<m; j++){
+			need[i][j] = max[i][j] - allocation[i][j];
+		}
+	}
+
+	for(int i=0; i<m; i++){
+		work[i] = available[i];
+	}
+
+	while(count < n){
+		int found = 0;
+	
+		for(int i=0; i<n; i++){
+			if(finish[i] == 0){
+			
+				int j;
+				for(j=0; j<m; j++){
+					if(need[i][j] > work[j]){
+						break;
+					}
+				}
+
+				if(j == m){
+					for(int k=0; k<m; k++){
+						work[k] += allocation[i][k];
+					}
+
+					safeSeq[count] = i;
+					count++;
+
+					finish[i] = 1;
+					found = 1;
+				}
+			}
+		}
+
+		if(found == 0){
+			break;
+		}
+	}
+
+	if(count == n){
+		printf("System is in SAFE state");
+		
+		printf("\nSafe Sequence: ");
+		for(int i=0; i<n; i++){
+			printf("P%d ", safeSeq[i]);
+		}
+		printf("\n");
+	}else{
+		printf("System is NOT in safe state");
+	}
+
+	return 0;
+}</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>

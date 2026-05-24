@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <script type="text/plain" id="raw-code">#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int optimal(int ref[], int n, int frames){
+	int f[10], faults=0;
+
+	for(int i=0; i<frames; i++){
+		f[i] = -1;
+	}
+
+	for(int i=0; i<n; i++){
+		int found = 0;
+	
+		for(int j=0; j<frames; j++){
+			if(f[j] == ref[i]){
+				found = 1;
+				break;
+			}
+		}
+
+		if(!found){
+			int pos = -1;
+			int farthest = -1;
+	
+			for(int j=0; j<frames; j++){
+				int k;
+		
+				for(k=i+1; k<n; k++){
+					if(f[j] == ref[k]){
+						break;
+					}
+				}
+				
+				if(k == n){
+					pos = j;
+					break;
+				}
+
+				if(k > farthest){
+					farthest = k;
+					pos = j;
+				}
+			}
+
+			if(pos == -1){
+				pos = 0;
+			}
+
+			f[pos] = ref[i];
+			faults++;
+		}
+	}
+
+	return faults;
+}
+
+int main(int argc, char *argv[]){
+	if(argc != 3){
+		printf("Usage: %s <length> <frames>", argv[0]);
+		return 0;
+	}
+
+	int n = atoi(argv[1]);
+	int frames = atoi(argv[2]);
+	
+	int ref[100];
+	srand(time(NULL));
+
+	printf("Reference String:\n");
+	for(int i=0; i<n; i++){
+		ref[i] = rand() % 10;
+		printf("%d ", ref[i]);
+	}
+
+	printf("\nOptimal Faults = %d", optimal(ref, n, frames));
+
+	return 0;
+}</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>

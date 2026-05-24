@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <script type="text/plain" id="raw-code" #include <stdio.h>
+
+struct Process {
+    int pid, at, bt;
+};
+
+float FCFS(struct Process p[], int n) {
+
+    int time = 0;
+
+    float totalWT = 0;
+
+    for(int i = 0; i < n; i++) {
+
+        if(time < p[i].at)
+            time = p[i].at;
+
+        int wt = time - p[i].at;
+
+        totalWT += wt;
+
+        time += p[i].bt;
+    }
+
+    return totalWT / n;
+}
+
+int main() {
+
+    int n;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    struct Process p[n];
+
+    for(int i = 0; i < n; i++) {
+
+        p[i].pid = i + 1;
+
+        printf("\nProcess P%d\n", i + 1);
+
+        printf("Arrival Time: ");
+        scanf("%d", &p[i].at);
+
+        printf("Burst Time: ");
+        scanf("%d", &p[i].bt);
+    }
+
+    float avgWT = FCFS(p, n);
+
+    printf("\nAverage Waiting Time = %.2f\n", avgWT);
+
+    return 0;
+}</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>

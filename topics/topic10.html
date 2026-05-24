@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <script type="text/plain" id="raw-code">#include <stdio.h>
+#include <unistd.h>
+#include <math.h>
+#include <sys/types.h>
+
+int main() {
+
+    int fd[2];
+    pid_t pid;
+
+    double a, b, c;
+    double four_ac, b2, result, discriminant;
+
+    printf("Enter values of a, b, c: ");
+    scanf("%lf %lf %lf", &a, &b, &c);
+
+    if(pipe(fd) == -1) {
+        perror("Pipe failed");
+        return 1;
+    }
+
+    pid = fork();
+
+    if(pid < 0) {
+        perror("Fork failed");
+        return 1;
+    }
+
+    else if(pid == 0) {
+
+        close(fd[0]);
+
+        four_ac = 4 * a * c;
+
+        write(fd[1], &four_ac, sizeof(four_ac));
+
+        close(fd[1]);
+    }
+
+    else {
+
+        close(fd[1]);
+
+        b2 = b * b;
+
+        read(fd[0], &four_ac, sizeof(four_ac));
+
+        close(fd[0]);
+
+        discriminant = b2 - four_ac;
+
+        if(discriminant < 0) {
+
+            printf("Discriminant (b^2 - 4ac) = %lf is NEGATIVE.\n", discriminant);
+
+            printf("Square root of a negative number is imaginary. Cannot compute real value.\n");
+        }
+
+        else {
+
+            result = sqrt(discriminant);
+
+            printf("Value of sqrt(b^2 - 4ac) = %lf\n", result);
+        }
+    }
+
+    return 0;
+}</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>

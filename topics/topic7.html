@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+
+<body>
+  <pre><code id="code-display"></code></pre>
+
+  <script type="text/plain" id="raw-code">#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int absvalue(int x){
+	if(x < 0)
+		return -x;
+	return x;
+}
+
+void copyArray(int dest[], int src[], int n){
+	for(int i=0; i<n; i++){
+		dest[i] = src[i];
+	}
+}
+
+void sortArray(int arr[], int n){
+	for(int i=0; i<n-1; i++){
+		for(int j=0; j<n-i-1; j++){
+			if(arr[j] > arr[j+1]){
+				int temp = arr[j];
+				arr[j] = arr[j+1];
+				arr[j+1] = temp;
+			}
+		}
+	}
+}
+
+int look(int req[], int n, int head){
+	int arr[10];
+	copyArray(arr, req, n);
+	sortArray(arr, n);
+
+	int total = 0;
+	int i;
+
+	for(i=0; i<n; i++){
+		if(arr[i] > head){
+			break;
+		}
+	}
+	
+	for(int j=i; j<n; j++){
+		total += absvalue(head - arr[j]);
+		head = arr[j];
+	}
+
+	for(int j=i-1; j>=0; j--){
+		total += absvalue(head - arr[j]);
+		head = arr[j];
+	}
+	
+	return total;
+}
+
+int main(int argc, char *argv[]){
+	if(argc != 2){
+		printf("Usage: %s <initial head>\n", argv[0]);
+	}
+	
+	int head = atoi(argv[1]);
+	int req[10];
+	srand(time(NULL));
+
+	printf("Disk Requests:\n");
+	for(int i=0; i<10; i++){
+		req[i] = rand() % 5000;
+		printf("%d ", req[i]);
+	}
+
+	printf("\nLOOK Head Movement = %d\n", look(req, 10, head));
+	
+	return 0;
+}
+	</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+  </script>
+</body>
+
+</html>
