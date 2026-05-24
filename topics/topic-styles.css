@@ -7,6 +7,12 @@ body {
   box-sizing: border-box;
 }
 
+/* Relative container wrapping code & copy button */
+.code-container {
+  position: relative;
+  width: 100%;
+}
+
 pre {
   background-color: #1e1e1e;
   border: 1px solid #2d2d2d;
@@ -24,6 +30,45 @@ code {
   white-space: pre; /* Essential for keeping tab indents and preventing line wrapping */
   tab-size: 4;
   -moz-tab-size: 4;
+}
+
+/* Copy Button Styling */
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(30, 30, 30, 0.85);
+  border: 1px solid #3e3e3e;
+  border-radius: 4px;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.copy-btn:hover {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border-color: #5e5e5e;
+}
+
+.copy-btn:active {
+  transform: scale(0.95);
+}
+
+/* Copied Feedback Visual State */
+.copy-btn.copied {
+  background-color: #1b4d3e;
+  border-color: #2b7a60;
+  color: #a3f7bf;
 }
 
 /* Custom Scrollbar for premium dark editor UI */

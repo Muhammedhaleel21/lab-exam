@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="topic-styles.css">
 </head>
-
 <body>
-  <pre><code id="code-display"></code></pre>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      <span>Copy</span>
+    </button>
+    <pre><code id="code-display"></code></pre>
+  </div>
 
-  <script type="text/plain" id="raw-code" #include <stdio.h>
+  <script type="text/plain" id="raw-code">#include <stdio.h>
 
 struct Process {
     int pid, at, bt;
@@ -68,7 +75,27 @@ int main() {
   <script>
     const rawCode = document.getElementById('raw-code').textContent;
     document.getElementById('code-display').textContent = rawCode.trim();
+
+    function copyCode() {
+      const code = document.getElementById('code-display').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const origHTML = btn.innerHTML;
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Copied!</span>
+        `;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = origHTML;
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
   </script>
 </body>
-
 </html>
