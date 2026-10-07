@@ -16,59 +16,83 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
+  <script type="text/plain" id="raw-code">//server
 
-struct Process {
-    int pid, at, bt;
-};
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <time.h>
 
-float FCFS(struct Process p[], int n) {
+#define PORT 8080
+#define BUFFER_SIZE 1024
 
-    int time = 0;
+int main()
+{
+    int sockfd;
+    char buffer[BUFFER_SIZE];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len;
 
-    float totalWT = 0;
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    for(int i = 0; i < n; i++) {
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-        if(time < p[i].at)
-            time = p[i].at;
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-        int wt = time - p[i].at;
+    printf("UDP Time Server Running...\n");
 
-        totalWT += wt;
+    while (1)
+    {
+        len = sizeof(client_addr);
+        recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&client_addr, &len);
 
-        time += p[i].bt;
+        time_t current_time;
+        time(&current_time);
+        strcpy(buffer, ctime(&current_time));
+
+        sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)&client_addr, len);
     }
 
-    return totalWT / n;
+    close(sockfd);
+    return 0;
 }
 
-int main() {
+//client
 
-    int n;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-    printf("Enter number of processes: ");
-    scanf("%d", &n);
+#define PORT 8080
+#define BUFFER_SIZE 1024
 
-    struct Process p[n];
+int main()
+{
+    int sockfd;
+    char buffer[BUFFER_SIZE] = "TIME";
+    struct sockaddr_in server_addr;
+    socklen_t len;
 
-    for(int i = 0; i < n; i++) {
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-        p[i].pid = i + 1;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-        printf("\nProcess P%d\n", i + 1);
+    sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-        printf("Arrival Time: ");
-        scanf("%d", &p[i].at);
+    len = sizeof(server_addr);
+    recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&server_addr, &len);
 
-        printf("Burst Time: ");
-        scanf("%d", &p[i].bt);
-    }
+    printf("Server Time: %s\n", buffer);
 
-    float avgWT = FCFS(p, n);
-
-    printf("\nAverage Waiting Time = %.2f\n", avgWT);
-
+    close(sockfd);
     return 0;
 }</script>
 
