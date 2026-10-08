@@ -18,54 +18,31 @@
 
   <script type="text/plain" id="raw-code">
     
-from sklearn.datasets import fetch_20newsgroups
+import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
-# 1. Load Data
-categories = [
-    'alt.atheism',
-    'soc.religion.christian',
-    'comp.graphics',
-    'sci.med'
-]
+data = pd.read_csv("20NewsGroups1.csv")
+X = data["text"]
+y = data["category"]
 
-newsgroups_train = fetch_20newsgroups(
-    subset='train',
-    categories=categories
-)
-
-newsgroups_test = fetch_20newsgroups(
-    subset='test',
-    categories=categories
+x_train_text, x_test_text, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42
 )
 
 vectorizer = CountVectorizer()
+x_train = vectorizer.fit_transform(x_train_text)
+x_test = vectorizer.transform(x_test_text)
 
-X_train = vectorizer.fit_transform(newsgroups_train.data)
-X_test = vectorizer.transform(newsgroups_test.data)
+mle_nb = MultinomialNB(alpha=10).fit(x_train, y_train)
+map_nb = MultinomialNB(alpha=1.0).fit(x_train, y_train)
 
-# 2. MLE (No smoothing, alpha=0)
-mle_nb = MultinomialNB(alpha=1e-10).fit(
-    X_train,
-    newsgroups_train.target
-)
-
-# 3. MAP (Laplace Smoothing, alpha=1.0)
-map_nb = MultinomialNB(alpha=1.0).fit(
-    X_train,
-    newsgroups_train.target
-)
-
-# 4. Compare
-print(
-    f"MLE Accuracy: {accuracy_score(newsgroups_test.target, mle_nb.predict(X_test)):.2f}"
-)
-
-print(
-    f"MAP (Dirichlet Prior) Accuracy: {accuracy_score(newsgroups_test.target, map_nb.predict(X_test)):.2f}"
-)
+print(f"MLE Accuracy: {accuracy_score(y_test, mle_nb.predict(x_test)):.2f}")
+print(f"MAP Accuracy: {accuracy_score(y_test, map_nb.predict(x_test)):.2f}")
 
 </script>
 
