@@ -16,107 +16,115 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
+  <script type="text/plain" id="raw-code">
+    
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
 
-struct Process {
-    int pid, at, bt;
-};
+# Load California Housing Dataset
+housing = fetch_california_housing(as_frame=True)
 
-void copyBT(int dest[], int src[], int n) {
+# Create DataFrame
+df = housing.frame
 
-    for(int i = 0; i < n; i++) {
-        dest[i] = src[i];
-    }
-}
+# Feature: Average Rooms
+X = df[['AveRooms']].values
 
-float RR(struct Process p[], int n, int originalBT[], int quantum) {
+# Target: House Value
+y = df['MedHouseVal'].values
 
-    int remaining[n];
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-    int time = 0, done = 0;
+# LINEAR REGRESSION USING GRADIENT DESCENT
+m = len(X_train)
+theta0 = 0
+theta1 = 0
+learning_rate = 0.001
+iterations = 1000
 
-    float totalWT = 0;
+for i in range(iterations):
+    y_pred = theta0 + theta1 * X_train.flatten()
 
-    copyBT(remaining, originalBT, n);
+    d_theta0 = (1/m) * np.sum(y_pred - y_train)
 
-    while(done < n) {
+    d_theta1 = (1/m) * np.sum(
+        (y_pred - y_train) * X_train.flatten()
+    )
 
-        int executed = 0;
+    theta0 = theta0 - learning_rate * d_theta0
+    theta1 = theta1 - learning_rate * d_theta1
 
-        for(int i = 0; i < n; i++) {
+# Predictions
+y_pred_gd = theta0 + theta1 * X_test.flatten()
 
-            if(p[i].at <= time && remaining[i] > 0) {
+# Evaluation
+mse_gd = mean_squared_error(y_test, y_pred_gd)
+r2_gd = r2_score(y_test, y_pred_gd)
 
-                int exec;
+print("----- Gradient Descent -----")
+print("Intercept (θ0):", theta0)
+print("Slope (θ1):", theta1)
+print("MSE:", mse_gd)
+print("R² Score:", r2_gd)
 
-                if(remaining[i] > quantum)
-                    exec = quantum;
-                else
-                    exec = remaining[i];
+# LINEAR REGRESSION USING NORMAL EQUATION
 
-                remaining[i] -= exec;
+X_b = np.c_[np.ones((len(X_train), 1)), X_train]
 
-                time += exec;
+theta_best = np.linalg.inv(
+    X_b.T.dot(X_b)
+).dot(
+    X_b.T
+).dot(y_train)
 
-                executed = 1;
+X_test_b = np.c_[np.ones((len(X_test), 1)), X_test]
 
-                if(remaining[i] == 0) {
+y_pred_ne = X_test_b.dot(theta_best)
 
-                    done++;
+mse_ne = mean_squared_error(y_test, y_pred_ne)
+r2_ne = r2_score(y_test, y_pred_ne)
 
-                    int tat = time - p[i].at;
+print("\n----- Normal Equation -----")
+print("Intercept:", theta_best[0])
+print("Slope:", theta_best[1])
+print("MSE:", mse_ne)
+print("R² Score:", r2_ne)
 
-                    int wt = tat - originalBT[i];
+# VISUALIZATION
 
-                    totalWT += wt;
-                }
-            }
-        }
+plt.figure(figsize=(8, 6))
 
-        if(!executed)
-            time++;
-    }
+plt.scatter(
+    X_test,
+    y_test,
+    color='blue',
+    label='Actual Data'
+)
 
-    return totalWT / n;
-}
+sorted_index = np.argsort(X_test.flatten())
 
-int main() {
+plt.plot(
+    X_test.flatten()[sorted_index],
+    y_pred_ne[sorted_index],
+    color='red',
+    linewidth=2,
+    label='Regression Line'
+)
 
-    int n;
+plt.xlabel("Average Number of Rooms (AveRooms)")
+plt.ylabel("Median House Value")
+plt.title("Linear Regression on California Housing Dataset")
+plt.legend()
+plt.show()
 
-    int quantum;
-
-    printf("Enter number of processes: ");
-    scanf("%d", &n);
-
-    struct Process p[n];
-
-    int originalBT[n];
-
-    for(int i = 0; i < n; i++) {
-
-        p[i].pid = i + 1;
-
-        printf("\nProcess P%d\n", i + 1);
-
-        printf("Arrival Time: ");
-        scanf("%d", &p[i].at);
-
-        printf("Burst Time: ");
-        scanf("%d", &p[i].bt);
-
-        originalBT[i] = p[i].bt;
-    }
-
-    printf("\nEnter Time Quantum: ");
-    scanf("%d", &quantum);
-
-    float avgWT = RR(p, n, originalBT, quantum);
-
-    printf("\nAverage Waiting Time = %.2f\n", avgWT);
-
-    return 0;
-}</script>
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

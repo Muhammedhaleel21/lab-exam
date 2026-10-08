@@ -16,85 +16,38 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-int absvalue(int x){
-	if(x < 0)
-		return -x;
-	return x;
-}
-
-void copyArray(int dest[], int src[], int n){
-	for(int i=0; i<n; i++){
-		dest[i] = src[i];
-	}
-}
-
-void sortArray(int arr[], int n){
-	for(int i=0; i<n-1; i++){
-		for(int j=0; j<n-i-1; j++){
-			if(arr[j] > arr[j+1]){
-				int temp = arr[j];
-				arr[j] = arr[j+1];
-				arr[j+1] = temp;
-			}
-		}
-	}
-}
-
-int cscan(int req[], int n, int head){
-	int arr[10];
-	copyArray(arr, req, n);
-	sortArray(arr, n);
-
-	int total = 0;
-	int i;
-
-	for(i=0; i<n; i++){
-		if(arr[i] > head){
-			break;
-		}
-	}
-
-	for(int j=i; j<n; j++){
-		total += absvalue(head - arr[j]);
-		head = arr[j];
-	}
+  <script type="text/plain" id="raw-code">
 	
-	total += absvalue(head - 4999);
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB, BernoulliNB
+from sklearn.metrics import accuracy_score, f1_score
 
-	head = 0;
-	total += 4999;
+# 1. Load Data
+cats = ['sci.space', 'rec.autos']
 
-	for(int j=0; j<i; j++){
-		total += absvalue(head - arr[j]);
-		head = arr[j];
-	}
+train = fetch_20newsgroups(subset='train', categories=cats)
+test = fetch_20newsgroups(subset='test', categories=cats)
 
-	return total;
-}
+# 2. Vectorization
+vec_multi = CountVectorizer()
 
-int main(int argc, char *argv[]){
-	if(argc != 2){
-		printf("Usage: %s <initial head>\n", argv[0]);
-	}
-	
-	int head = atoi(argv[1]);
-	int req[10];
-	srand(time(NULL));
+X_train_m = vec_multi.fit_transform(train.data)
+X_test_m = vec_multi.transform(test.data)
 
-	printf("Disk Requests:\n");
-	for(int i=0; i<10; i++){
-		req[i] = rand() % 5000;
-		printf("%d ", req[i]);
-	}
+vec_bern = CountVectorizer(binary=True)
 
-	printf("\nC-SCAN Head Movement = %d\n", cscan(req, 10, head));
-	
-	return 0;
-}</script>
+X_train_b = vec_bern.fit_transform(train.data)
+X_test_b = vec_bern.transform(test.data)
+
+# 3. Fit & Predict
+m_nb = MultinomialNB().fit(X_train_m, train.target)
+b_nb = BernoulliNB().fit(X_train_b, train.target)
+
+print(f"Multinomial Accuracy: {accuracy_score(test.target, m_nb.predict(X_test_m)):.2f}")
+print(f"Bernoulli Accuracy: {accuracy_score(test.target, b_nb.predict(X_test_b)):.2f}")
+
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

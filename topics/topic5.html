@@ -16,110 +16,58 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <limits.h>
+  <script type="text/plain" id="raw-code">
+    
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
 
-struct Process {
-    int pid, at, bt;
-};
+# 1. Load Data
+categories = [
+    'alt.atheism',
+    'soc.religion.christian',
+    'comp.graphics',
+    'sci.med'
+]
 
-void copyBT(int dest[], int src[], int n) {
+newsgroups_train = fetch_20newsgroups(
+    subset='train',
+    categories=categories
+)
 
-    for(int i = 0; i < n; i++) {
-        dest[i] = src[i];
-    }
-}
+newsgroups_test = fetch_20newsgroups(
+    subset='test',
+    categories=categories
+)
 
-float SRTF(struct Process p[], int n, int originalBT[]) {
+vectorizer = CountVectorizer()
 
-    int remaining[n], completed[n];
+X_train = vectorizer.fit_transform(newsgroups_train.data)
+X_test = vectorizer.transform(newsgroups_test.data)
 
-    int time = 0, done = 0;
+# 2. MLE (No smoothing, alpha=0)
+mle_nb = MultinomialNB(alpha=1e-10).fit(
+    X_train,
+    newsgroups_train.target
+)
 
-    float totalWT = 0;
+# 3. MAP (Laplace Smoothing, alpha=1.0)
+map_nb = MultinomialNB(alpha=1.0).fit(
+    X_train,
+    newsgroups_train.target
+)
 
-    copyBT(remaining, originalBT, n);
+# 4. Compare
+print(
+    f"MLE Accuracy: {accuracy_score(newsgroups_test.target, mle_nb.predict(X_test)):.2f}"
+)
 
-    for(int i = 0; i < n; i++) {
-        completed[i] = 0;
-    }
+print(
+    f"MAP (Dirichlet Prior) Accuracy: {accuracy_score(newsgroups_test.target, map_nb.predict(X_test)):.2f}"
+)
 
-    while(done < n) {
-
-        int idx = -1;
-
-        int minBT = INT_MAX;
-
-        for(int i = 0; i < n; i++) {
-
-            if(!completed[i] &&
-               p[i].at <= time &&
-               remaining[i] > 0 &&
-               remaining[i] < minBT) {
-
-                minBT = remaining[i];
-                idx = i;
-            }
-        }
-
-        if(idx == -1) {
-            time++;
-            continue;
-        }
-
-        remaining[idx]--;
-
-        time++;
-
-        if(remaining[idx] == 0) {
-
-            completed[idx] = 1;
-
-            done++;
-
-            int tat = time - p[idx].at;
-
-            int wt = tat - originalBT[idx];
-
-            totalWT += wt;
-        }
-    }
-
-    return totalWT / n;
-}
-
-int main() {
-
-    int n;
-
-    printf("Enter number of processes: ");
-    scanf("%d", &n);
-
-    struct Process p[n];
-
-    int originalBT[n];
-
-    for(int i = 0; i < n; i++) {
-
-        p[i].pid = i + 1;
-
-        printf("\nProcess P%d\n", i + 1);
-
-        printf("Arrival Time: ");
-        scanf("%d", &p[i].at);
-
-        printf("Burst Time: ");
-        scanf("%d", &p[i].bt);
-
-        originalBT[i] = p[i].bt;
-    }
-
-    float avgWT = SRTF(p, n, originalBT);
-
-    printf("\nAverage Waiting Time = %.2f\n", avgWT);
-
-    return 0;
-}</script>
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;
