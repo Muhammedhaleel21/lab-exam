@@ -21,31 +21,26 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
-# Load California Housing Dataset
-housing = fetch_california_housing(as_frame=True)
+df = pd.read_csv("file_name.csv")
 
-# Create DataFrame
-df = housing.frame
+print(df.head())
+print(df.columns)
 
-# Feature: Average Rooms
 X = df[['AveRooms']].values
-
-# Target: House Value
 y = df['MedHouseVal'].values
 
-# Split dataset
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# LINEAR REGRESSION USING GRADIENT DESCENT
 m = len(X_train)
+
 theta0 = 0
 theta1 = 0
+
 learning_rate = 0.001
 iterations = 1000
 
@@ -61,20 +56,16 @@ for i in range(iterations):
     theta0 = theta0 - learning_rate * d_theta0
     theta1 = theta1 - learning_rate * d_theta1
 
-# Predictions
 y_pred_gd = theta0 + theta1 * X_test.flatten()
 
-# Evaluation
 mse_gd = mean_squared_error(y_test, y_pred_gd)
 r2_gd = r2_score(y_test, y_pred_gd)
 
-print("----- Gradient Descent -----")
+print("Gradient Descent")
 print("Intercept (θ0):", theta0)
 print("Slope (θ1):", theta1)
 print("MSE:", mse_gd)
 print("R² Score:", r2_gd)
-
-# LINEAR REGRESSION USING NORMAL EQUATION
 
 X_b = np.c_[np.ones((len(X_train), 1)), X_train]
 
@@ -91,13 +82,11 @@ y_pred_ne = X_test_b.dot(theta_best)
 mse_ne = mean_squared_error(y_test, y_pred_ne)
 r2_ne = r2_score(y_test, y_pred_ne)
 
-print("\n----- Normal Equation -----")
+print("\nNormal Equation")
 print("Intercept:", theta_best[0])
 print("Slope:", theta_best[1])
 print("MSE:", mse_ne)
 print("R² Score:", r2_ne)
-
-# VISUALIZATION
 
 plt.figure(figsize=(8, 6))
 
@@ -120,7 +109,8 @@ plt.plot(
 
 plt.xlabel("Average Number of Rooms (AveRooms)")
 plt.ylabel("Median House Value")
-plt.title("Linear Regression on California Housing Dataset")
+plt.title("Linear Regression")
+
 plt.legend()
 plt.show()
 

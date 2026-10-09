@@ -22,41 +22,33 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 import pandas as pd
 
-# 1. Load Training and Testing datasets
-train_data = pd.read_csv(r"D:\B.Tech ML LAB\fashion mnist\fashion-mnist_train.csv")
-test_data = pd.read_csv(r"D:\B.Tech ML LAB\fashion mnist\fashion-mnist_test.csv")
+train_data = pd.read_csv("file_name.csv")
+test_data = pd.read_csv("file_name.csv")
 
-# 2. Separate features (X) and target (y)
 X_train = train_data.drop("label", axis=1)
 y_train = train_data["label"]
 
 X_test = test_data.drop("label", axis=1)
 y_test = test_data["label"]
 
-# 3. Use a small sample for faster execution
 X_train = X_train.iloc[:5000]
 y_train = y_train.iloc[:5000]
 
 X_test = X_test.iloc[:1000]
 y_test = y_test.iloc[:1000]
 
-# 4. Normalize pixel values
 X_train = X_train / 255.0
 X_test = X_test / 255.0
 
-# 5. Experiment with different values of K
 for k in [3, 7, 15]:
     knn = KNeighborsClassifier(n_neighbors=k)
-
-    # Train the KNN classifier
+    
     knn.fit(X_train, y_train)
-
-    # Predict test samples
+    
     pred = knn.predict(X_test)
-
-    # Calculate accuracy
+    
     accuracy = accuracy_score(y_test, pred)
-
+    
     print(f"K={k} Accuracy: {accuracy:.2f}")
   
   </script>

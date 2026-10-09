@@ -18,34 +18,40 @@
 
   <script type="text/plain" id="raw-code">
 	
-from sklearn.datasets import fetch_20newsgroups
+import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-# 1. Load Data
-cats = ['sci.space', 'rec.autos']
+df = pd.read_csv("file_name.csv")
 
-train = fetch_20newsgroups(subset='train', categories=cats)
-test = fetch_20newsgroups(subset='test', categories=cats)
+X = df["text"]
+y = df["label"]
 
-# 2. Vectorization
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
 vec_multi = CountVectorizer()
-
-X_train_m = vec_multi.fit_transform(train.data)
-X_test_m = vec_multi.transform(test.data)
+X_train_m = vec_multi.fit_transform(X_train)
+X_test_m = vec_multi.transform(X_test)
 
 vec_bern = CountVectorizer(binary=True)
+X_train_b = vec_bern.fit_transform(X_train)
+X_test_b = vec_bern.transform(X_test)
 
-X_train_b = vec_bern.fit_transform(train.data)
-X_test_b = vec_bern.transform(test.data)
+m_nb = MultinomialNB()
+m_nb.fit(X_train_m, y_train)
 
-# 3. Fit & Predict
-m_nb = MultinomialNB().fit(X_train_m, train.target)
-b_nb = BernoulliNB().fit(X_train_b, train.target)
+b_nb = BernoulliNB()
+b_nb.fit(X_train_b, y_train)
 
-print(f"Multinomial Accuracy: {accuracy_score(test.target, m_nb.predict(X_test_m)):.2f}")
-print(f"Bernoulli Accuracy: {accuracy_score(test.target, b_nb.predict(X_test_b)):.2f}")
+m_pred = m_nb.predict(X_test_m)
+b_pred = b_nb.predict(X_test_b)
+
+print(f"Multinomial Accuracy: {accuracy_score(y_test, m_pred):.2f}")
+print(f"Bernoulli Accuracy: {accuracy_score(y_test, b_pred):.2f}")
 
 </script>
 
