@@ -16,80 +16,78 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+  <script type="text/plain" id="raw-code">
 
-int absvalue(int x){
-	if(x < 0)
-		return -x;
-	return x;
-}
-
-void copyArray(int dest[], int src[], int n){
-	for(int i=0; i<n; i++){
-		dest[i] = src[i];
-	}
-}
-
-void sortArray(int arr[], int n){
-	for(int i=0; i<n-1; i++){
-		for(int j=0; j<n-i-1; j++){
-			if(arr[j] > arr[j+1]){
-				int temp = arr[j];
-				arr[j] = arr[j+1];
-				arr[j+1] = temp;
-			}
-		}
-	}
-}
-
-int look(int req[], int n, int head){
-	int arr[10];
-	copyArray(arr, req, n);
-	sortArray(arr, n);
-
-	int total = 0;
-	int i;
-
-	for(i=0; i<n; i++){
-		if(arr[i] > head){
-			break;
-		}
-	}
 	
-	for(int j=i; j<n; j++){
-		total += absvalue(head - arr[j]);
-		head = arr[j];
-	}
+1. What is Machine Learning, and how does it differ from traditional programming?
+Answer: Machine Learning enables a computer to learn patterns from data and make predictions or decisions without explicitly programming every rule. In traditional programming, rules and input data are given to produce the output, whereas ML learns the rules from examples.
+2. What are the major paradigms of Machine Learning?
+Answer: The major paradigms are supervised, semi-supervised, unsupervised, and reinforcement learning. They differ mainly in the type of feedback or information available during learning.
+3. What is supervised learning?
+Answer: Supervised learning learns a mapping between input features and known output labels using labelled training data. It is commonly used for classification and regression problems.
+4. What is the difference between supervised and unsupervised learning?
+Answer: Supervised learning uses labelled data, while unsupervised learning works with data without predefined output labels. Classification and regression are supervised tasks, whereas clustering is a common unsupervised task.
+5. What is Maximum Likelihood Estimation (MLE)?
+Answer: MLE estimates model parameters by selecting the parameter values that make the observed data most probable. It maximizes the likelihood function of the observed samples.
+6. What is Maximum A Posteriori (MAP) estimation?
+Answer: MAP estimation finds parameter values that maximize the posterior probability given both the observed data and prior knowledge. Unlike MLE, MAP incorporates a prior distribution over the parameters.
+7. State the basic idea of Bayesian formulation in Machine Learning.
+Answer: Bayesian formulation updates prior beliefs about a parameter using observed evidence to obtain a posterior distribution. Bayes' theorem provides the mathematical relationship between the prior, likelihood, and posterior.
+8. What is feature representation in supervised learning?
+Answer: Feature representation converts raw data into measurable attributes that can be supplied to a machine learning model. Good features should capture useful information relevant to predicting the target variable.
+9. What is a loss function, and why is it important?
+Answer: A loss function measures the difference between a model's predicted output and the actual output. Optimization algorithms use the loss value to adjust model parameters and improve predictions.
+10. What is linear regression with one variable?
+Answer: Linear regression with one variable models the relationship between an input variable and a continuous output using a straight line. The model is commonly written as ŷ = b₀ + b₁x.
+11. What is multiple linear regression?
+Answer: Multiple linear regression predicts a continuous target using two or more input variables. Its model can be expressed as ŷ = b₀ + b₁x₁ + b₂x₂ + ... + bₙxₙ.
+12. How does gradient descent find the parameters of a regression model?
+Answer: Gradient descent repeatedly changes the model parameters in the direction that decreases the loss function. The learning rate controls the size of each parameter update.
+13. What is the matrix method for solving linear regression?
+Answer: The matrix method represents the training data and parameters using matrices and obtains the coefficients using a closed-form least-squares solution. It can provide the solution directly without iterative gradient-descent updates when the required matrix operations are feasible.
+14. What is logistic regression?
+Answer: Logistic regression is a classification algorithm that estimates the probability of a class using a logistic or sigmoid function. For binary classification, the output probability is commonly converted into a class using a threshold.
+15. What is the basic assumption of Naïve Bayes classification?
+Answer: Naïve Bayes assumes that the features are conditionally independent given the class. Despite this simplifying assumption, it can perform effectively in many classification applications.
+16. What is K-Nearest Neighbors (KNN)?
+Answer: KNN classifies a new sample based on the classes of its nearest training samples. The value of K determines how many neighboring samples are considered for the decision.
+17. What is the main idea of the ID3 decision tree algorithm?
+Answer: ID3 builds a decision tree by selecting the attribute with the highest information gain for splitting the training data. The process continues recursively until suitable stopping conditions are reached.
+18. What is overfitting in Machine Learning?
+Answer: Overfitting occurs when a model learns the training data too closely, including noise or accidental patterns. Such a model usually performs well on training data but poorly on unseen data.
+19. What is the purpose of LASSO regularization?
+Answer: LASSO adds an L1 penalty to the loss function to discourage large coefficient values. It can force some coefficients to become exactly zero, making it useful for feature selection.
+20. What is the purpose of Ridge regularization?
+Answer: Ridge adds an L2 penalty to the loss function to reduce excessively large model coefficients. It helps control model complexity and can improve generalization, especially when features are correlated.
+21. What are training, validation, and testing datasets?
+Answer: The training set is used to learn model parameters, while the validation set is used to select or tune model settings. The test set is kept separate and used to evaluate the final model on unseen data.
+22. Define accuracy, precision, and recall in classification.
+Answer: Accuracy is the proportion of all predictions that are correct. Precision measures the proportion of predicted positive cases that are actually positive, while recall measures the proportion of actual positive cases that are correctly identified.
+23. What is F1-measure?
+Answer: F1-measure is the harmonic mean of precision and recall. It provides a single measure that balances false positives and false negatives when both precision and recall are important.
+24. What is an ROC curve and what does AUC represent?
+Answer: An ROC curve plots the true positive rate against the false positive rate at different classification thresholds. AUC represents the area under this curve and summarizes the model's ability to distinguish between classes across thresholds.
+25. What are MAE and RMSE in regression evaluation?
+Answer: Mean Absolute Error (MAE) is the average absolute difference between predicted and actual values. Root Mean Squared Error (RMSE) is the square root of the average squared errors and gives greater weight to larger errors.
+26. What is R-squared or coefficient of determination?
+Answer: R-squared indicates the proportion of variation in the target variable explained by a regression model. Its value is commonly interpreted relative to a baseline model, with higher values generally indicating greater explained variation.
+27. What is a hyperplane and maximum-margin hyperplane in SVM?
+Answer: A hyperplane is a decision boundary that separates classes in the feature space. A maximum-margin hyperplane is chosen so that the distance between the boundary and the nearest training points from the classes is maximized.
+28. How does a kernel help in non-linear SVM?
+Answer: A kernel allows an SVM to model non-linear decision boundaries by computing relationships corresponding to a higher-dimensional feature space without explicitly transforming every data point. Common kernels include polynomial and radial basis function (RBF) kernels.
+29. What is a perceptron and how is it related to a neural network?
+Answer: A perceptron is a basic computational unit that combines weighted inputs and a bias and applies an activation function to produce an output. It forms the foundation of a single-layer neural network and can also be used as a building block in multilayer networks.
+30. What are activation functions and backpropagation in a neural network?
+Answer: Activation functions such as Sigmoid, ReLU, and Tanh introduce non-linearity into neural networks, allowing them to learn complex relationships. Backpropagation calculates gradients of the loss with respect to network parameters and uses them to update weights during training.
+31.Explain about Activation functions (Relu,Sigmoid ,TanH)
+Activation functions introduce non-linearity into a neural network, allowing it to learn complex relationships between inputs and outputs.
+•	Sigmoid: Converts the input into a value between 0 and 1, making it useful for binary classification and probability outputs. However, it can suffer from the vanishing gradient problem. 
+•	Tanh: Converts the input into a value between −1 and +1 and is zero-centered, which can make learning more effective than sigmoid in some hidden layers. It can also suffer from vanishing gradients. 
+•	ReLU (Rectified Linear Unit): Outputs 0 for negative inputs and the input itself for positive inputs. It is widely used in hidden layers because it is computationally simple and generally helps neural networks train faster.
 
-	for(int j=i-1; j>=0; j--){
-		total += absvalue(head - arr[j]);
-		head = arr[j];
-	}
-	
-	return total;
-}
 
-int main(int argc, char *argv[]){
-	if(argc != 2){
-		printf("Usage: %s <initial head>\n", argv[0]);
-	}
-	
-	int head = atoi(argv[1]);
-	int req[10];
-	srand(time(NULL));
 
-	printf("Disk Requests:\n");
-	for(int i=0; i<10; i++){
-		req[i] = rand() % 5000;
-		printf("%d ", req[i]);
-	}
-
-	printf("\nLOOK Head Movement = %d\n", look(req, 10, head));
-	
-	return 0;
-}</script>
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;
