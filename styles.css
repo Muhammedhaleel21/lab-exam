@@ -56,6 +56,181 @@ h1 {
   margin-bottom: 20px;
 }
 
+.site-footer {
+  width: 100%;
+  max-width: 800px;
+  color: #aaaaaa;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.site-footer a {
+  color: #ffffff;
+}
+
+.terms-page {
+  padding: 40px 20px;
+  background-color: #000000;
+}
+
+.terms-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 820px;
+  padding: 12px 0;
+  text-align: left;
+}
+
+.terms-back-link {
+  display: inline-block;
+  margin-bottom: 36px;
+  color: #aaaaaa;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.terms-back-link:hover {
+  color: #ffffff;
+}
+
+.terms-header {
+  padding-bottom: 32px;
+  border-bottom: 1px solid #333333;
+}
+
+.terms-eyebrow {
+  margin: 0 0 12px;
+  color: #888888;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.terms-header h1 {
+  margin: 0;
+  font-size: clamp(32px, 6vw, 46px);
+  letter-spacing: -0.04em;
+  text-align: left;
+}
+
+.terms-subtitle {
+  margin: 10px 0 0;
+  color: #cccccc;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.terms-intro {
+  max-width: 660px;
+  margin: 18px 0 0;
+  color: #aaaaaa;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.terms-sections {
+  padding-top: 8px;
+}
+
+.terms-section {
+  padding: 26px 0;
+  border-bottom: 1px solid #222222;
+}
+
+.terms-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 14px;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.terms-section h2 span {
+  color: #777777;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.terms-section p,
+.terms-section li {
+  color: #bbbbbb;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.terms-section p {
+  margin: 0 0 12px;
+}
+
+.terms-section p:last-child {
+  margin-bottom: 0;
+}
+
+.terms-section ul {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 16px;
+  padding-left: 22px;
+}
+
+.terms-section li::marker {
+  color: #777777;
+}
+
+.terms-final {
+  border-bottom: 0;
+}
+
+.terms-takeaway {
+  margin-top: 20px !important;
+  padding: 16px 18px;
+  border-left: 2px solid #888888;
+  background: #111111;
+  color: #ffffff !important;
+}
+
+.terms-signoff {
+  color: #888888 !important;
+}
+
+.terms-footer {
+  padding-top: 22px;
+  border-top: 1px solid #333333;
+  color: #888888;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.terms-footer p {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .terms-page {
+    padding: 20px 12px;
+  }
+
+  .terms-content {
+    padding: 26px 22px 22px;
+  }
+
+  .terms-back-link {
+    margin-bottom: 28px;
+  }
+
+  .terms-section {
+    padding: 22px 0;
+  }
+
+  .terms-section h2 {
+    font-size: 18px;
+  }
+}
+
 iframe {
   width: 100%;
   height: 80vh; /* Default to a large, responsive percentage of the screen height in case of browser local file security blocks */
