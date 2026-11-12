@@ -16,85 +16,33 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">//server
+  <script type="text/plain" id="raw-code">
+    
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <time.h>
+categories = ['alt.atheism', 'soc.religion.christian', 'comp.graphics', 'sci.med']
 
-#define PORT 8080
-#define BUFFER_SIZE 1024
+newsgroups_train = fetch_20newsgroups(subset='train', categories=categories)
+newsgroups_test = fetch_20newsgroups(subset='test', categories=categories)
 
-int main()
-{
-    int sockfd;
-    char buffer[BUFFER_SIZE];
-    struct sockaddr_in server_addr, client_addr;
-    socklen_t len;
+vectorizer = CountVectorizer()
 
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+X_train = vectorizer.fit_transform(newsgroups_train.data)
+X_test = vectorizer.transform(newsgroups_test.data)
 
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(PORT);
+mle_nb = MultinomialNB(alpha=1e-10).fit(X_train, newsgroups_train.target)
+map_nb = MultinomialNB(alpha=1.0).fit(X_train, newsgroups_train.target)
 
-    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+mle_pred = mle_nb.predict(X_test)
+map_pred = map_nb.predict(X_test)
 
-    printf("UDP Time Server Running...\n");
+print("MLE Accuracy:", accuracy_score(newsgroups_test.target, mle_pred))
+print("MAP Accuracy:", accuracy_score(newsgroups_test.target, map_pred))
 
-    while (1)
-    {
-        len = sizeof(client_addr);
-        recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&client_addr, &len);
-
-        time_t current_time;
-        time(&current_time);
-        strcpy(buffer, ctime(&current_time));
-
-        sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)&client_addr, len);
-    }
-
-    close(sockfd);
-    return 0;
-}
-
-//client
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-
-#define PORT 8080
-#define BUFFER_SIZE 1024
-
-int main()
-{
-    int sockfd;
-    char buffer[BUFFER_SIZE] = "TIME";
-    struct sockaddr_in server_addr;
-    socklen_t len;
-
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-    sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
-
-    len = sizeof(server_addr);
-    recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&server_addr, &len);
-
-    printf("Server Time: %s\n", buffer);
-
-    close(sockfd);
-    return 0;
-}</script>
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;
