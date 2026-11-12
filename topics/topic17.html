@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+<body>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      <span>Copy</span>
+    </button>
+    <pre><code id="code-display"></code></pre>
+  </div>
+
+  <script type="text/plain" id="raw-code">
+	
+	
+ALGORITHM – Polynomial Regression
+
+1. Start the program and import the required libraries such as Pandas, NumPy, Matplotlib and Scikit-learn.
+
+
+2. Load the Auto MPG dataset using pd.read_csv().
+
+
+3. Remove missing values and duplicate records using dropna() and drop_duplicates().
+
+
+4. Select Horsepower and MPG columns and convert Horsepower into numeric format.
+
+
+5. Display the first five rows of the cleaned dataset using head().
+
+
+6. Separate Horsepower as the independent variable (X) and MPG as the dependent variable (y).
+
+
+7. Split the dataset into 80% training data and 20% testing data using train_test_split().
+
+
+8. Define polynomial degrees as 2, 3, 4 and 5.
+
+
+9. For each degree, generate polynomial features using PolynomialFeatures() and train a Linear Regression model.
+
+
+10. Predict MPG values using the testing data and calculate MSE and R² Score for each model.
+
+
+11. Display the degree, MSE and R² Score of each model.
+
+
+12. Plot the actual data using a scatter plot and generate equally spaced Horsepower values using np.linspace().
+
+
+13. Generate and plot the polynomial regression curves for degrees 2, 3, 4 and 5 on the same graph.
+
+
+14. Add X-axis label, Y-axis label, graph title and legend using plt.xlabel(), plt.ylabel(), plt.title() and plt.legend().
+
+
+15. Display the final graph using plt.show() and stop the program.
+
+
+</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+
+    function copyCode() {
+      const code = document.getElementById('code-display').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const origHTML = btn.innerHTML;
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Copied!</span>
+        `;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = origHTML;
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  </script>
+</body>
+</html>

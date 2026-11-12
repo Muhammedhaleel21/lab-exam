@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="topic-styles.css">
+</head>
+<body>
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      <span>Copy</span>
+    </button>
+    <pre><code id="code-display"></code></pre>
+  </div>
+
+  <script type="text/plain" id="raw-code">
+	
+ALGORITHM-decision tree classifier 
+
+1. **Start** the program.
+
+2. Import the necessary Python libraries such as Pandas for data handling, Scikit-learn for machine learning and Matplotlib for visualization.
+
+3. Load the Iris dataset from the CSV file using the `pd.read_csv()` function.
+
+4. Display the first five records of the dataset using `head()` to understand its structure and features.
+
+5. Preprocess the dataset by removing missing values using the `dropna()` function to ensure data quality.
+
+6. Separate the dataset into input features (X) and target variable (y). The input features include Sepal Length, Sepal Width, Petal Length and Petal Width, while the target variable is Species.
+
+7. Divide the dataset into training and testing sets using the `train_test_split()` function. Use 80% of the data for training and 20% for testing.
+
+8. Create a Decision Tree Classifier using the `DecisionTreeClassifier()` function with Entropy as the splitting criterion to select the best feature for each decision.
+
+9. Train the Decision Tree model using the training data with the `fit()` function. The model learns the relationship between input features and target classes.
+
+10. Predict the species of the test data using the `predict()` function.
+
+11. Evaluate the performance of the model by comparing the predicted values with actual values using the `accuracy_score()` function.
+
+12. Display the classification accuracy of the Decision Tree model.
+
+13. Visualize the trained Decision Tree using the `plot_tree()` function. Display the tree structure with feature names and class labels.
+
+14. Calculate the importance of each input feature using the `feature_importances_` attribute to identify which features contribute most to classification.
+
+15. Display the feature importance values and visualize them using a bar graph with Matplotlib.
+
+16. **Stop** the program.
+
+</script>
+
+  <script>
+    const rawCode = document.getElementById('raw-code').textContent;
+    document.getElementById('code-display').textContent = rawCode.trim();
+
+    function copyCode() {
+      const code = document.getElementById('code-display').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const origHTML = btn.innerHTML;
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Copied!</span>
+        `;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = origHTML;
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  </script>
+</body>
+</html>
