@@ -16,81 +16,73 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
+  <script type="text/plain" id="raw-code">
+    
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 
-#define SHM_SIZE 1024
+# Load dataset
+train_data = pd.read_csv("fashion-mnist_train.csv")
+test_data = pd.read_csv("fashion-mnist_test.csv")
 
-int main() {
+# Separate features and labels
+X_train = train_data.drop("label", axis=1)
+y_train = train_data["label"]
 
-    int shmid;
+X_test = test_data.drop("label", axis=1)
+y_test = test_data["label"]
 
-    char *shm;
+# Select small subset
+X_train = X_train.iloc[:5000]
+y_train = y_train.iloc[:5000]
 
-    key_t key = IPC_PRIVATE;
+X_test = X_test.iloc[:1000]
+y_test = y_test.iloc[:1000]
 
-    shmid = shmget(key, SHM_SIZE, IPC_CREAT | 0666);
+# Normalize pixel values
+X_train = X_train / 255.0
+X_test = X_test / 255.0
 
-    if(shmid < 0) {
-        perror("shmget");
-        exit(1);
-    }
+# Fashion MNIST class names
+class_names = [
+    'T-shirt/top', 'Trouser', 'Pullover', 'Dress',
+    'Coat', 'Sandal', 'Shirt', 'Sneaker',
+    'Bag', 'Ankle boot'
+]
 
-    shm = (char *)shmat(shmid, NULL, 0);
+# Test different K values
+for k in [1, 3, 5, 7]:
 
-    if(shm == (char *) -1) {
-        perror("shmat");
-        exit(1);
-    }
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
 
-    if(fork() == 0) {
+    pred = knn.predict(X_test)
 
-        char s1[100], s2[100], s3[100], result[300];
+    accuracy = accuracy_score(y_test, pred)
 
-        sscanf(shm, "%s %s %s", s1, s2, s3);
+    print(f"K={k} Accuracy: {accuracy:.2f}")
 
-        sprintf(result, "%s %s %s", s1, s2, s3);
+# Display test images with predictions
+plt.figure(figsize=(10, 5))
 
-        strcpy(shm, result);
+for i in range(10):
+    image = X_test.iloc[i].values.reshape(28, 28)
 
-        exit(0);
-    }
+    actual = class_names[y_test.iloc[i]]
+    predicted = class_names[pred[i]]
 
-    else {
+    plt.subplot(2, 5, i + 1)
+    plt.imshow(image, cmap='gray')
+    plt.title(f"Actual: {actual}\nPredicted: {predicted}")
+    plt.axis('off')
 
-        char final[300];
+plt.tight_layout()
+plt.show()
 
-        sprintf(shm, "Hello S4 Students");
 
-        wait(NULL);
-
-        strcpy(final, shm);
-
-        for(int i = 0; final[i] != '\0'; i++) {
-
-            if(islower(final[i]))
-                final[i] = toupper(final[i]);
-
-            else if(isupper(final[i]))
-                final[i] = tolower(final[i]);
-        }
-
-        printf("Final Output: %s\n", final);
-
-        shmdt(shm);
-
-        shmctl(shmid, IPC_RMID, NULL);
-    }
-
-    return 0;
-}</script>
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

@@ -16,74 +16,67 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <unistd.h>
-#include <math.h>
-#include <sys/types.h>
+  <script type="text/plain" id="raw-code">
+   
+    
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import CountVectorizer
+import numpy as np
 
-int main() {
+# Select two categories
+categories = ['alt.atheism', 'soc.religion.christian']
 
-    int fd[2];
-    pid_t pid;
+# Load dataset
+newsgroups = fetch_20newsgroups(
+    subset='train',
+    categories=categories
+)
 
-    double a, b, c;
-    double four_ac, b2, result, discriminant;
+# Convert text into word counts
+vectorizer = CountVectorizer(stop_words='english')
+X = vectorizer.fit_transform(newsgroups.data)
 
-    printf("Enter values of a, b, c: ");
-    scanf("%lf %lf %lf", &a, &b, &c);
+# Select one category
+category = 'alt.atheism'
+category_index = newsgroups.target_names.index(category)
 
-    if(pipe(fd) == -1) {
-        perror("Pipe failed");
-        return 1;
-    }
+# Get word counts for selected category
+X_category = X[newsgroups.target == category_index]
 
-    pid = fork();
+word_counts = np.asarray(X_category.sum(axis=0)).flatten()
 
-    if(pid < 0) {
-        perror("Fork failed");
-        return 1;
-    }
+# Vocabulary
+words = vectorizer.get_feature_names_out()
 
-    else if(pid == 0) {
+# Total word count
+total_words = word_counts.sum()
+vocab_size = len(words)
 
-        close(fd[0]);
+# MLE probabilities
+mle_prob = word_counts / total_words
 
-        four_ac = 4 * a * c;
+print("MLE Word Probabilities:")
+for word in ['god', 'religion', 'atheism', 'people']:
+    index = np.where(words == word)[0]
+    if len(index) > 0:
+        print(word, ":", mle_prob[index[0]])
 
-        write(fd[1], &four_ac, sizeof(four_ac));
+# MAP probabilities using Dirichlet priors
+for alpha in [0.5, 1, 2]:
 
-        close(fd[1]);
-    }
+    map_prob = (word_counts + alpha) / (
+        total_words + alpha * vocab_size
+    )
 
-    else {
+    print("\nMAP Probabilities (alpha =", alpha, "):")
 
-        close(fd[1]);
+    for word in ['god', 'religion', 'atheism', 'people']:
+        index = np.where(words == word)[0]
+        if len(index) > 0:
+            print(word, ":", map_prob[index[0]])
 
-        b2 = b * b;
 
-        read(fd[0], &four_ac, sizeof(four_ac));
-
-        close(fd[0]);
-
-        discriminant = b2 - four_ac;
-
-        if(discriminant < 0) {
-
-            printf("Discriminant (b^2 - 4ac) = %lf is NEGATIVE.\n", discriminant);
-
-            printf("Square root of a negative number is imaginary. Cannot compute real value.\n");
-        }
-
-        else {
-
-            result = sqrt(discriminant);
-
-            printf("Value of sqrt(b^2 - 4ac) = %lf\n", result);
-        }
-    }
-
-    return 0;
-}</script>
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

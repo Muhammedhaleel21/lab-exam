@@ -18,66 +18,65 @@
 
   <script type="text/plain" id="raw-code">
     
-1. Explain OSI Reference Model.
-The OSI model explains network communication using seven layers: Physical, Data Link, Network, Transport, Session, Presentation, and Application.
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB, BernoulliNB
+from sklearn.metrics import accuracy_score, f1_score
+import pandas as pd
 
-2. Brief idea of HTTP.
-HTTP stands for Hypertext Transfer Protocol. It is used to transfer web pages and data between web browsers and web servers.
+# Load dataset
+data = pd.read_csv("/content/20NewsGroups1.csv")
 
-3. Explain DNS.
-DNS stands for Domain Name System. It converts domain names like google.com into IP addresses.
+# Select 4 categories
+categories = ['sci.space', 'rec.autos',
+              'comp.graphics', 'talk.politics.misc']
 
-4. Compare LAN, MAN, WAN.
-LAN covers a small area, MAN covers a city, and WAN covers a large geographical area. The Internet is an example of WAN.
+filtered_data = data[data['category'].isin(categories)]
 
-5. Explain Multiplexing.
-Multiplexing combines multiple data signals and transmits them through a single communication channel. It is performed by a multiplexer.
+x = filtered_data['text']
+y = filtered_data['category']
 
-6. Explain Demultiplexing.
-Demultiplexing separates combined data signals at the receiving end. It is performed by a demultiplexer.
+# Split dataset
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.2, random_state=42, stratify=y
+)
 
-7. Functions of Internet Service Providers (ISPs).
-ISPs provide Internet connectivity, IP addresses, and technical support. Examples include Jio, Airtel, and BSNL.
+# Multinomial Vectorizer
+vec_multi = CountVectorizer()
+X_train_m = vec_multi.fit_transform(x_train)
+X_test_m = vec_multi.transform(x_test)
 
-8. Role of Routers and Switches.
-A router connects different networks and forwards packets using IP addresses. A switch connects devices within a LAN using MAC addresses.
+# Bernoulli Vectorizer
+vec_bern = CountVectorizer(binary=True)
+X_train_b = vec_bern.fit_transform(x_train)
+X_test_b = vec_bern.transform(x_test)
 
-9. Functions of Transport Layer.
-The transport layer provides end-to-end communication between applications. Its functions include segmentation, flow control, error control, and port addressing.
+# Train models
+m_nb = MultinomialNB().fit(X_train_m, y_train)
+b_nb = BernoulliNB().fit(X_train_b, y_train)
 
-10. What is a Socket Address?
-A socket address identifies a communication endpoint using an IP address and port number. Example: 192.168.1.10:8080.
+# Predictions
+m_pred = m_nb.predict(X_test_m)
+b_pred = b_nb.predict(X_test_b)
 
-11. What is Error Control?
-Error control detects and handles lost or corrupted data during transmission. Its techniques include acknowledgements, sequence numbers, and retransmission.
+# Compare Accuracy and F1-score
+print("Multinomial Naive Bayes")
+print("Accuracy:", accuracy_score(y_test, m_pred))
+print("F1 Score:", f1_score(y_test, m_pred, average='macro'))
 
-12. What is an Acknowledgement?
-An acknowledgement (ACK) is a message sent by the receiver to confirm data reception. It helps the sender determine whether data was received successfully.
+print("\nBernoulli Naive Bayes")
+print("Accuracy:", accuracy_score(y_test, b_pred))
+print("F1 Score:", f1_score(y_test, b_pred, average='macro'))
 
-13. What is Go-Back-N Protocol?
-Go-Back-N is a sliding window protocol that retransmits the lost or damaged frame and subsequent frames in the sequence. It provides reliable data transmission.
+# Predict a new sentence
+new_text = ["NASA is planning a new mission to explore Mars and space."]
 
-14. What is Selective Repeat Protocol?
-Selective Repeat retransmits only the lost or damaged frames. It is more efficient than Go-Back-N because it avoids unnecessary retransmissions.
+new_m = vec_multi.transform(new_text)
+new_b = vec_bern.transform(new_text)
 
-15. Major functions of TCP.
-TCP provides reliable, connection-oriented communication between devices. Its functions include error control, flow control, sequencing, acknowledgements, and congestion control.
-
-16. Explain Sliding Window Protocol.
-The sliding window protocol allows multiple frames to be sent before receiving all acknowledgements. It improves transmission efficiency and supports flow control.
-
-17. What is Piggybacking in Bidirectional Protocols?
-Piggybacking attaches an acknowledgement to an outgoing data frame instead of sending it separately. It reduces the number of frames transmitted.
-
-18. What is a Sequence Number?
-A sequence number identifies the position of a data segment or frame in a sequence. It helps arrange data correctly and detect missing or duplicate data.
-
-19. Primary responsibility of the Transport Layer.
-The transport layer provides end-to-end communication between application processes on different devices. It may also provide reliable delivery and flow control.
-
-20. What is a Port Number? State its range and categories.
-A port number identifies an application or service and ranges from 0 to 65535. Categories are well-known (0–1023), registered (1024–49151), and dynamic/private (49152–65535).
-
+print("\nNew Sentence Prediction")
+print("Multinomial Prediction:", m_nb.predict(new_m)[0])
+print("Bernoulli Prediction:", b_nb.predict(new_b)[0])
 
 </script>
 
