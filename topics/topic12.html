@@ -16,44 +16,73 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <string.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
+  <script type="text/plain" id="raw-code">
+    
+    
+Algorithm – KNN (K-Nearest Neighbors)
 
-#define MSGKEY 1234
+1. Start the program.
 
-struct msg{
-	long type;
-	char text[100];
-};
 
-int main(){
-	struct msg m1, m2;
+2. Import the required libraries:
 
-	int qid;
-	qid = msgget(MSGKEY, IPC_CREAT | 0666);
+pandas for loading and handling the dataset.
 
-	printf("Enter a string:");
-	scanf("%s", m1.text);
-	m1.type = 1;
+KNeighborsClassifier for implementing the KNN algorithm.
 
-	msgsnd(qid, &m1, sizeof(m1.text), 0);
+accuracy_score for calculating the accuracy.
 
-	msgrcv(qid, &m2, sizeof(m2.text), 2, 0);
 
-	printf("Reversed string received: %s", m2.text);
-	
-	if(strcmp(m1.text, m2.text) == 0){
-		printf("\nPalindrome\n");
-	}else{
-		printf("\nNot Palindrome\n");
-	}
 
-	msgctl(qid, IPC_RMID, NULL);
+3. Load the Fashion MNIST training dataset and testing dataset using pd.read_csv().
 
-	return 0;
-}</script>
+
+4. Separate the input features and target labels:
+
+X_train = train_data.drop("label", axis=1) – Removes the label column from the training dataset and stores the remaining pixel values as input features.
+
+y_train = train_data["label"] – Selects the label column as the target variable for training.
+
+X_test = test_data.drop("label", axis=1) – Removes the label column from the testing dataset and stores the pixel values as test features.
+
+y_test = test_data["label"] – Selects the actual labels of the testing images.
+
+
+Here, axis=1 means column-wise operation.
+
+
+5. Select the first 5000 images for training and the first 1000 images for testing using iloc[].
+
+
+6. Normalize the pixel values by dividing both training and testing data by 255.0. This converts pixel values from 0–255 into 0–1.
+
+
+7. Select different values of K (3, 7 and 5) using a for loop.
+
+
+8. Create a KNN classifier using KNeighborsClassifier(n_neighbors=k).
+
+
+9. Train the KNN model using fit() with training features and training labels.
+
+
+10. Predict the labels of test images using predict().
+
+
+11. Calculate the accuracy by comparing the actual labels with the predicted labels using accuracy_score().
+
+
+12. Display the K value and corresponding accuracy using the print() statement.
+
+
+13. Repeat the process for all selected K values.
+
+
+14. Stop the program.
+
+
+
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

@@ -16,85 +16,80 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-int optimal(int ref[], int n, int frames){
-	int f[10], faults=0;
-
-	for(int i=0; i<frames; i++){
-		f[i] = -1;
-	}
-
-	for(int i=0; i<n; i++){
-		int found = 0;
+  <script type="text/plain" id="raw-code">
 	
-		for(int j=0; j<frames; j++){
-			if(f[j] == ref[i]){
-				found = 1;
-				break;
-			}
-		}
+Algorithm
 
-		if(!found){
-			int pos = -1;
-			int farthest = -1;
-	
-			for(int j=0; j<frames; j++){
-				int k;
-		
-				for(k=i+1; k<n; k++){
-					if(f[j] == ref[k]){
-						break;
-					}
-				}
-				
-				if(k == n){
-					pos = j;
-					break;
-				}
+1. Import pandas for loading and handling the dataset.
 
-				if(k > farthest){
-					farthest = k;
-					pos = j;
-				}
-			}
 
-			if(pos == -1){
-				pos = 0;
-			}
+2. Import numpy for numerical operations.
 
-			f[pos] = ref[i];
-			faults++;
-		}
-	}
 
-	return faults;
-}
+3. Import matplotlib.pyplot for data visualization.
 
-int main(int argc, char *argv[]){
-	if(argc != 3){
-		printf("Usage: %s <length> <frames>", argv[0]);
-		return 0;
-	}
 
-	int n = atoi(argv[1]);
-	int frames = atoi(argv[2]);
-	
-	int ref[100];
-	srand(time(NULL));
+4. Import train_test_split to divide the dataset into training and testing sets.
 
-	printf("Reference String:\n");
-	for(int i=0; i<n; i++){
-		ref[i] = rand() % 10;
-		printf("%d ", ref[i]);
-	}
 
-	printf("\nOptimal Faults = %d", optimal(ref, n, frames));
+5. Import LinearRegression, Ridge and Lasso to create regression models.
 
-	return 0;
-}</script>
+
+6. Import mean_squared_error and r2_score to evaluate model performance.
+
+
+7. Load the Diabetes dataset using pd.read_csv().
+
+
+8. Separate the input features (X) and target variable (y).
+
+
+9. Split the dataset into 80% training data and 20% testing data using train_test_split().
+
+
+10. Create and train the Linear Regression model using fit().
+
+
+11. Predict the output using predict() and calculate MSE and R² score.
+
+
+12. Create Ridge Regression models using alpha values 0.1, 1 and 10, train them and evaluate their performance.
+
+
+13. Create Lasso Regression models using alpha values 0.1, 1 and 10, train them and evaluate their performance.
+
+
+14. Create Linear, Ridge and Lasso models again using selected alpha values and train them with the training data.
+
+
+15. Predict the test outputs using all three models.
+
+
+16. Create a figure using plt.figure(figsize=(12,4)) to set the overall graph size.
+
+
+17. Use plt.subplot(1,3,1), plt.subplot(1,3,2) and plt.subplot(1,3,3) to arrange three plots in one row.
+
+
+18. Use plt.scatter() to create scatter plots comparing actual values with predicted values for each regression model.
+
+
+19. Use plt.xlabel() and plt.ylabel() to label the X-axis as Actual and Y-axis as Predicted.
+
+
+20. Use plt.title() to give a separate title to each regression plot.
+
+
+21. Use plt.tight_layout() to automatically adjust the spacing between the plots.
+
+
+22. Display all three graphs using plt.show().
+
+
+23. Stop the program.
+
+
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

@@ -16,71 +16,119 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-int lru(int ref[], int n, int frames){
-	int f[10], timeArr[10];
-	int faults=0, t=0;
-
-	for(int i=0; i<frames; i++){
-		f[i] = -1;
-		timeArr[i] = 0;
-	}
+  <script type="text/plain" id="raw-code">
 	
-	for(int i=0; i<n; i++){
-		int found = -1;
-
-		for(int j=0; j<frames; j++){
-			if(f[j] == ref[i]){
-				found = j;
-				break;
-			}
-		}
-
-		if(found != -1){
-			timeArr[found] = ++t;
-		}else{
-			int pos=0;
-			
-			for(int j=1; j<frames; j++){
-				if(timeArr[j] < timeArr[pos]){
-					pos = j;
-				}
-			}
-
-			f[pos] = ref[i];
-			timeArr[pos] = ++t;
-			faults++;
-		}
-	}
-
-	return faults;
-}
-
-int main(int argc, char *argv[]){
-	if(argc != 3){
-		printf("Usage: %s <length> <frames>", argv[0]);
-		return 0;
-	}
-
-	int n = atoi(argv[1]);
-	int frames = atoi(argv[2]);
 	
-	int ref[100];
-	srand(time(NULL));
+Algorithm: MLE and MAP using Multinomial Naive Bayes
 
-	printf("Reference String:\n");
-	for(int i=0; i<n; i++){
-		ref[i] = rand() % 10;
-		printf("%d ", ref[i]);
-	}
+Step 1: Start the program.
 
-	printf("/LRU Faults = %d", lru(ref, n, frames));
+Step 2: Import the required libraries.
 
-	return 0;
-}</script>
+Import Pandas for handling the dataset.
+
+Import train_test_split for splitting the dataset.
+
+Import CountVectorizer for text vectorization.
+
+Import MultinomialNB for Naive Bayes classification.
+
+Import accuracy_score for calculating accuracy.
+
+
+Step 3: Load the dataset.
+
+Load the 20 Newsgroups dataset using the read_csv() function.
+
+Step 4: Select the required categories.
+
+Select the following four categories:
+
+alt.atheism
+
+soc.religion.christian
+
+comp.graphics
+
+sci.med
+
+
+Step 5: Filter the dataset.
+
+Use the isin() function to filter the dataset and select only the records belonging to the four selected categories.
+
+Step 6: Separate features and labels.
+
+Assign the text column to X (input features).
+
+Assign the category column to y (target labels).
+
+
+Step 7: Split the dataset.
+
+Divide the dataset into training and testing data using train_test_split().
+
+80% for training.
+
+20% for testing.
+
+Set random_state = 9 to obtain reproducible results.
+
+
+Step 8: Perform text vectorization.
+
+Create a CountVectorizer() object to convert text documents into numerical vectors by counting the occurrence of words.
+
+Step 9: Fit and transform training data.
+
+Use fit_transform() to learn the vocabulary from the training data and convert the text into numerical vectors.
+
+Step 10: Transform testing data.
+
+Use transform() to convert the testing data into numerical vectors using the vocabulary learned from the training data.
+
+Step 11: Apply MLE (Maximum Likelihood Estimation).
+
+Create a Multinomial Naive Bayes classifier with alpha = 0.0.
+
+MLE estimates the probabilities using only the observed training data.
+
+Train the MLE model using fit().
+
+
+Step 12: Apply MAP (Maximum A Posteriori).
+
+Create another Multinomial Naive Bayes classifier with alpha = 1.0.
+
+MAP considers prior information along with the observed training data.
+
+Train the MAP model using fit().
+
+
+Step 13: Predict the results.
+
+Use the predict() function to predict the categories of the testing data using both MLE and MAP models.
+
+Step 14: Calculate MLE accuracy.
+
+Use accuracy_score() to compare the actual testing labels with the predicted labels of the MLE model.
+
+Step 15: Calculate MAP accuracy.
+
+Use accuracy_score() to compare the actual testing labels with the predicted labels of the MAP model.
+
+Step 16: Display the results.
+
+Print and display the accuracy of both MLE and MAP models.
+
+Step 17: Compare the results.
+
+Compare the accuracy values of MLE and MAP to understand their classification performance.
+
+Step 18: Stop the program.
+
+
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;

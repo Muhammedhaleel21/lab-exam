@@ -16,59 +16,82 @@
     <pre><code id="code-display"></code></pre>
   </div>
 
-  <script type="text/plain" id="raw-code">#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+  <script type="text/plain" id="raw-code">
+    
+    
+ALGORITHM
 
-int fifo(int ref[], int n, int frames){
-	int f[10], faults=0, k=0;
+Naive Bayes Classification (Multinomial and Bernoulli)
 
-	for(int i=0; i<frames; i++){
-		f[i] = -1;
-	}
+Step 1: Start the program.
 
-	for(int i=0; i<n; i++){
-		int found = 0;
+Step 2: Import the required libraries:
 
-		for(int j=0; j<frames; j++){
-			if(f[j] == ref[i]){
-				found = 1;
-				break;
-			}
-		}
-		
-		if(!found){
-			f[k] = ref[i];
-			k = (k+1) % frames;
-			faults++;
-		}
-	}
+Import Pandas as pd.
 
-	return faults;
-}
+Import train_test_split from sklearn.model_selection.
 
-int main(int argc, char *argv[]){
-	if(argc != 3){
-		printf("Usage: %s <length> <frames>", argv[0]);
-		return 0;
-	}
+Import CountVectorizer from sklearn.feature_extraction.text.
 
-	int n = atoi(argv[1]);
-	int frames = atoi(argv[2]);
+Import MultinomialNB and BernoulliNB from sklearn.naive_bayes.
 
-	int ref[100];
-	srand(time(NULL));
+Import accuracy_score and f1_score from sklearn.metrics.
 
-	printf("Reference String:\n");
-	for(int i=0; i<n; i++){
-		ref[i] = rand() % 10;
-		printf("%d ", ref[i]);
-	}
 
-	printf("\nFIFO faults: %d", fifo(ref, n, frames));
+Step 3: Load the dataset using Pandas.
 
-	return 0;
-}</script>
+data = pd.read_csv("20NewsGroups.csv")
+
+Step 4: Select the required categories:
+
+sci.space
+
+rec.autos
+
+
+Step 5: Filter the dataset to select only the above categories using isin().
+
+Step 6: Separate the dataset into input features and target labels.
+
+X = text
+
+y = category
+
+
+Step 7: Split the dataset into training and testing sets using train_test_split().
+
+80% for training.
+
+20% for testing.
+
+Set random_state=9.
+
+
+Step 8: Create a Multinomial CountVectorizer using CountVectorizer().
+
+Step 9: Apply fit_transform() to the training data to learn the vocabulary and convert text into numerical features.
+
+Step 10: Apply transform() to the testing data using the learned vocabulary.
+
+Step 11: Create a Bernoulli CountVectorizer using CountVectorizer(binary=True) to convert word frequencies into binary values (0 and 1).
+
+Step 12: Apply fit_transform() to the Bernoulli training data and transform() to the testing data.
+
+Step 13: Train the Multinomial Naive Bayes model using MultinomialNB().fit() with the Multinomial training data and labels.
+
+Step 14: Train the Bernoulli Naive Bayes model using BernoulliNB().fit() with the Bernoulli training data and labels.
+
+Step 15: Predict the testing data using the predict() function for both models.
+
+Step 16: Calculate the accuracy of the Multinomial and Bernoulli models using accuracy_score().
+
+Step 17: Calculate the F1-score of both models using f1_score() with average='weighted'.
+
+Step 18: Display the accuracy and F1-score of both models using print().
+
+Step 19: Stop the program.
+
+</script>
 
   <script>
     const rawCode = document.getElementById('raw-code').textContent;
