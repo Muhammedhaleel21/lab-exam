@@ -17,41 +17,85 @@
   </div>
 
   <script type="text/plain" id="raw-code">
-    
+    import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB, BernoulliNB
-from sklearn.metrics import accuracy_score
-import pandas as pd
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-data = pd.read_csv("20NewsGroups1.csv")
+# 1. Load dataset
+data = pd.read_csv("/content/20NewsGroups1.csv")
 
-filtered_data = data[data['category'].isin(['sci.space', 'rec.autos'])]
+data = data.dropna(subset=['category'])
+data['text'] = data['text'].fillna('')
 
-X = filtered_data['text']
-y = filtered_data['category']
+# Select 4 categories
+categories = ['sci.space', 'rec.autos',
+              'comp.graphics', 'talk.politics.misc']
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=9
+data = data[data['category'].isin(categories)]
+
+x = data['text']
+y = data['category']
+
+# 2. Split dataset
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.2, random_state=42, stratify=y
 )
 
-vec_multi = CountVectorizer()
+# 3. Convert text into word counts
+vec = CountVectorizer()
 
-X_train_m = vec_multi.fit_transform(X_train)
-X_test_m = vec_multi.transform(X_test)
+X_train = vec.fit_transform(x_train)
+X_test = vec.transform(x_test)
 
-vec_bern = CountVectorizer(binary=True)
+# 4. Train models with different alpha values
+alphas = [0.1, 1, 10]
 
-X_train_b = vec_bern.fit_transform(X_train)
-X_test_b = vec_bern.transform(X_test)
+models = {}
+accuracies = {}
 
-m_nb = MultinomialNB().fit(X_train_m, y_train)
-b_nb = BernoulliNB().fit(X_train_b, y_train)
+for alpha in alphas:
 
-print(f"Multinomial Accuracy: {accuracy_score(y_test, m_nb.predict(X_test_m)):.2f}")
+    model = MultinomialNB(alpha=alpha)
+    model.fit(X_train, y_train)
 
-print(f"Bernoulli Accuracy: {accuracy_score(y_test, b_nb.predict(X_test_b)):.2f}")
+    pred = model.predict(X_test)
 
+    acc = accuracy_score(y_test, pred)
+
+    models[alpha] = model
+    accuracies[alpha] = acc
+
+    print("Alpha:", alpha)
+    print("Accuracy:", acc)
+    print()
+
+# 5. Find the best model
+best_alpha = max(accuracies, key=accuracies.get)
+
+best_model = models[best_alpha]
+
+print("Best Alpha:", best_alpha)
+print("Best Accuracy:", accuracies[best_alpha])
+
+# 6. Predict using the best model
+best_pred = best_model.predict(X_test)
+
+# 7. Display confusion matrix
+cm = confusion_matrix(y_test, best_pred, labels=best_model.classes_)
+
+sns.heatmap(cm, annot=True, fmt='d',
+            xticklabels=best_model.classes_,
+            yticklabels=best_model.classes_,
+            cmap='Blues')
+
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix - Best Multinomial Naive Bayes")
+plt.show()
 
 </script>
 
