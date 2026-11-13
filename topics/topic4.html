@@ -18,35 +18,95 @@
 
   <script type="text/plain" id="raw-code">
     
+
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt
 
-data = pd.read_csv("iris.csv")
-print(data.head())
+# 1. Load dataset
+data = pd.read_csv("Online Retail.csv")
 
-X = data.iloc[:, 0:4]
-y = data.iloc[:, 4]
+# Remove missing values
+data = data.dropna()
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Remove invalid transactions
+data = data[(data["Quantity"] > 0) & (data["UnitPrice"] > 0)]
 
-model = DecisionTreeClassifier(random_state=42)
+# Calculate total spending
+data["TotalAmount"] = data["Quantity"] * data["UnitPrice"]
 
-model.fit(X_train, y_train)
+# 2. Calculate customer spending and number of orders
+customer = data.groupby("CustomerID").agg({
+    "TotalAmount": "sum",
+    "InvoiceNo": "nunique"
+}).reset_index()
 
-y_pred = model.predict(X_test)
+customer.columns = ["CustomerID", "TotalSpending", "NumOrders"]
 
-accuracy = accuracy_score(y_test, y_pred)
+print(customer.head())
 
-print("Accuracy", accuracy)
+# 3. Classify customers as High-value or Low-value
+threshold = customer["TotalSpending"].median()
 
-plt.figure(figsize=(12,8))
+customer["Value"] = customer["TotalSpending"].apply(
+    lambda x: "High" if x >= threshold else "Low"
+)
 
-plot_tree(model, feature_names=X.columns, class_names=model.classes_, filled=True)
+# Features and target
+X = customer[["TotalSpending", "NumOrders"]]
+y = customer["Value"]
 
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# 4. Train Decision Trees with different depths
+depths = [2, 3, 5]
+best_accuracy = 0
+best_model = None
+
+for depth in depths:
+
+    model = DecisionTreeClassifier(
+        criterion="entropy",
+        max_depth=depth,
+        random_state=42
+    )
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    accuracy = accuracy_score(y_test, y_pred)
+
+    print("Depth:", depth)
+    print("Accuracy:", accuracy)
+
+    # Find best model
+    if accuracy > best_accuracy:
+        best_accuracy = accuracy
+        best_model = model
+
+# 5. Plot the best Decision Tree
+print("\nBest Accuracy:", best_accuracy)
+
+plt.figure(figsize=(14, 8))
+
+plot_tree(
+    best_model,
+    feature_names=X.columns,
+    class_names=best_model.classes_,
+    filled=True,
+    rounded=True
+)
+
+plt.title("Best Decision Tree - Online Retail Dataset")
 plt.show()
+
 
 </script>
 
