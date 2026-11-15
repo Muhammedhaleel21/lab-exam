@@ -18,86 +18,121 @@
 
   <script type="text/plain" id="raw-code">
     
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+//client.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.metrics import mean_squared_error, r2_score
+#define PORT 8080
+#define BUFFER_SIZE 1024
 
-df = pd.read_csv("auto-mpg.csv")
-print(df.head())
+int main()
+{
+    int server_fd, client_socket;
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t addr_len;
+    char filename[100];
+    char buffer[BUFFER_SIZE];
 
-df.dropna(inplace=True)
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-X = df[['displacement']]
-y = df['mpg']
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+    bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    listen(server_fd, 5);
 
-linear_model = LinearRegression()
-linear_model.fit(X_train, y_train)
+    printf("File Server Running...\n");
 
-y_pred_linear = linear_model.predict(X_test)
+    while(1)
+    {
+        addr_len = sizeof(client_addr);
 
-poly = PolynomialFeatures(degree=2)
+        client_socket = accept(server_fd, (struct sockaddr *)&client_addr, &addr_len);
 
-X_train_poly = poly.fit_transform(X_train)
-X_test_poly = poly.transform(X_test)
+        if(fork() == 0)
+        {
+            close(server_fd);
 
-poly_model = LinearRegression()
-poly_model.fit(X_train_poly, y_train)
+            recv(client_socket, filename, sizeof(filename), 0);
 
-y_pred_poly = poly_model.predict(X_test_poly)
+            FILE *fp = fopen(filename, "r");
 
-print("Linear Regression")
-print("Mean Squared Error (MSE):",mean_squared_error(y_test, y_pred_linear))
-print("R2 Score:", r2_score(y_test, y_pred_linear))
+            sprintf(buffer, "Server PID: %d\n\n", getpid());
+            send(client_socket, buffer, strlen(buffer), 0);
 
-print("\nPolynomial Regression")
-print("Mean Squared Error (MSE):",mean_squared_error(y_test, y_pred_poly))
-print("R2 Score:", r2_score(y_test, y_pred_poly))
+            if(fp == NULL)
+            {
+                strcpy(buffer, "Requested file does not exist.\n");
+                send(client_socket, buffer, strlen(buffer), 0);
+            }
+            else
+            {
+                while(fgets(buffer, BUFFER_SIZE, fp) != NULL)
+                {
+                    send(client_socket, buffer, strlen(buffer), 0);
+                }
 
-plt.figure(figsize=(8, 6))
+                fclose(fp);
+            }
 
-plt.scatter(
-    X['displacement'], y,
-    color='gray', alpha=0.5, label='Actual Data'
-)
+            close(client_socket);
+            exit(0);
+        }
 
-X_range = pd.DataFrame({
-    'displacement': np.linspace(
-        X['displacement'].min(),
-        X['displacement'].max(),
-        100
-    )
-})
+        close(client_socket);
+    }
 
-plt.plot(
-    X_range['displacement'],
-    linear_model.predict(X_range),
-    color='blue',
-    linewidth=2,
-    label='Linear Regression'
-)
+    return 0;
+}
 
-plt.plot(
-    X_range['displacement'],
-    poly_model.predict(poly.transform(X_range)),
-    color='red',
-    linewidth=2,
-    label='Polynomial Regression (Degree 2)'
-)
 
-plt.title("Linear Regression vs Polynomial Regression")
-plt.xlabel("Engine Displacement")
-plt.ylabel("Miles Per Gallon (MPG)")
-plt.legend()
-plt.show()
+//server.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
+int main()
+{
+    int sockfd;
+    struct sockaddr_in server_addr;
+    char filename[100];
+    char buffer[BUFFER_SIZE];
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    printf("Enter filename: ");
+    scanf("%s", filename);
+
+    send(sockfd, filename, strlen(filename) + 1, 0);
+
+    printf("\nResponse from Server:\n\n");
+
+    while(recv(sockfd, buffer, BUFFER_SIZE - 1, 0) > 0)
+    {
+        buffer[BUFFER_SIZE - 1] = '\0';
+        printf("%s", buffer);
+    }
+
+    close(sockfd);
+
+    return 0;
+}
+
 
 
   </script>
