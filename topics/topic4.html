@@ -30,9 +30,9 @@
 
 int main()
 {
-    int sockfd;
-    char buffer[MAX];
-    char result[50];
+    int sockfd, i, j, flag = 1;
+    char str[MAX], result[50];
+
     struct sockaddr_in server_addr, client_addr;
     socklen_t len = sizeof(client_addr);
 
@@ -46,21 +46,19 @@ int main()
 
     printf("UDP Server Running\n");
 
-    recvfrom(sockfd, buffer, MAX, 0,
+    recvfrom(sockfd, str, MAX, 0,
              (struct sockaddr *)&client_addr, &len);
 
-    buffer[strcspn(buffer, "\n")] = '\0';
+    str[strcspn(str, "\n")] = '\0';
 
-    printf("Received: %s\n", buffer);
-
-    int i, j, flag = 1;
+    printf("Received string: %s\n", str);
 
     i = 0;
-    j = strlen(buffer) - 1;
+    j = strlen(str) - 1;
 
     while(i < j)
     {
-        if(buffer[i] != buffer[j])
+        if(str[i] != str[j])
         {
             flag = 0;
             break;
@@ -78,12 +76,13 @@ int main()
     sendto(sockfd, result, strlen(result) + 1, 0,
            (struct sockaddr *)&client_addr, len);
 
-    printf("Result sent.\n");
+    printf("Result sent to client.\n");
 
     close(sockfd);
 
     return 0;
 }
+
 
 
 //client.c
@@ -98,8 +97,8 @@ int main()
 int main()
 {
     int sockfd;
-    char message[MAX];
-    char buffer[MAX];
+    char str[MAX], buffer[50];
+
     struct sockaddr_in server_addr;
     socklen_t len = sizeof(server_addr);
 
@@ -110,12 +109,12 @@ int main()
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     printf("Enter a string:\n");
-    fgets(message, MAX, stdin);
+    fgets(str, MAX, stdin);
 
-    sendto(sockfd, message, strlen(message) + 1, 0,
+    sendto(sockfd, str, strlen(str) + 1, 0,
            (struct sockaddr *)&server_addr, len);
 
-    recvfrom(sockfd, buffer, MAX, 0,
+    recvfrom(sockfd, buffer, sizeof(buffer), 0,
              (struct sockaddr *)&server_addr, &len);
 
     printf("\nResult: %s\n", buffer);
@@ -124,6 +123,8 @@ int main()
 
     return 0;
 }
+
+
 
 
 

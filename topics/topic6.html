@@ -25,13 +25,12 @@
 #include <arpa/inet.h>
 
 #define PORT 8080
-#define MAX 1024
 
 int main()
 {
-    int sockfd;
-    int n, arr[MAX], sum = 0;
-    float avg;
+    int sockfd, num, flag = 1;
+    char result[50];
+
     struct sockaddr_in server_addr, client_addr;
     socklen_t len = sizeof(client_addr);
 
@@ -43,36 +42,40 @@ int main()
 
     bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-    printf("UDP Server Running...\n");
+    printf("UDP Server Running\n");
 
-    recvfrom(sockfd, &n, sizeof(n), 0,
+    recvfrom(sockfd, &num, sizeof(num), 0,
              (struct sockaddr *)&client_addr, &len);
 
-    recvfrom(sockfd, arr, n * sizeof(int), 0,
-             (struct sockaddr *)&client_addr, &len);
+    printf("Received number: %d\n", num);
 
-    printf("Received numbers:\n");
+    if(num <= 1)
+        flag = 0;
 
-    for(int i = 0; i < n; i++)
+    for(int i = 2; i <= num / 2; i++)
     {
-        printf("%d ", arr[i]);
-        sum += arr[i];
+        if(num % i == 0)
+        {
+            flag = 0;
+            break;
+        }
     }
 
-    avg = (float)sum / n;
+    if(flag == 1)
+        strcpy(result, "Prime");
+    else
+        strcpy(result, "Not Prime");
 
-    printf("\nAverage = %.2f\n", avg);
-
-    sendto(sockfd, &avg, sizeof(avg), 0,
+    sendto(sockfd, result, strlen(result) + 1, 0,
            (struct sockaddr *)&client_addr, len);
 
-    printf("Average sent to client.\n");
+    printf("Result: %s\n", result);
+    printf("Result sent to client.\n");
 
     close(sockfd);
 
     return 0;
 }
-
 
 
 //client.c
@@ -82,13 +85,12 @@ int main()
 #include <arpa/inet.h>
 
 #define PORT 8080
-#define MAX 1024
 
 int main()
 {
-    int sockfd;
-    int n, arr[MAX];
-    float avg;
+    int sockfd, num;
+    char buffer[50];
+
     struct sockaddr_in server_addr;
     socklen_t len = sizeof(server_addr);
 
@@ -98,31 +100,22 @@ int main()
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    printf("Enter number of elements:\n");
-    scanf("%d", &n);
+    printf("Enter a number:\n");
+    scanf("%d", &num);
 
-    printf("Enter numbers:\n");
-
-    for(int i = 0; i < n; i++)
-    {
-        scanf("%d", &arr[i]);
-    }
-
-    sendto(sockfd, &n, sizeof(n), 0,
+    sendto(sockfd, &num, sizeof(num), 0,
            (struct sockaddr *)&server_addr, len);
 
-    sendto(sockfd, arr, n * sizeof(int), 0,
-           (struct sockaddr *)&server_addr, len);
-
-    recvfrom(sockfd, &avg, sizeof(avg), 0,
+    recvfrom(sockfd, buffer, sizeof(buffer), 0,
              (struct sockaddr *)&server_addr, &len);
 
-    printf("\nAverage = %.2f\n", avg);
+    printf("\nResult: %s\n", buffer);
 
     close(sockfd);
 
     return 0;
 }
+
 
 
 </script>

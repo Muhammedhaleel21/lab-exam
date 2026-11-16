@@ -26,12 +26,12 @@
 #include <arpa/inet.h>
 
 #define PORT 8080
-#define MAX 1024
 
 int main()
 {
-    int sockfd;
-    char buffer[MAX];
+    int sockfd, num;
+    unsigned long long fact = 1;
+
     struct sockaddr_in server_addr, client_addr;
     socklen_t len = sizeof(client_addr);
 
@@ -45,33 +45,21 @@ int main()
 
     printf("UDP Server Running\n");
 
-    recvfrom(sockfd, buffer, MAX, 0,
+    recvfrom(sockfd, &num, sizeof(num), 0,
              (struct sockaddr *)&client_addr, &len);
 
-    buffer[strcspn(buffer, "\n")] = '\0';
+    printf("Received number: %d\n", num);
 
-    printf("Received: %s\n", buffer);
-
-    int i, j;
-    char temp;
-
-    i = 0;
-    j = strlen(buffer) - 1;
-
-    while(i < j)
+    for(int i = 1; i <= num; i++)
     {
-        temp = buffer[i];
-        buffer[i] = buffer[j];
-        buffer[j] = temp;
-
-        i++;
-        j--;
+        fact = fact * i;
     }
 
-    sendto(sockfd, buffer, strlen(buffer) + 1, 0,
+    sendto(sockfd, &fact, sizeof(fact), 0,
            (struct sockaddr *)&client_addr, len);
 
-    printf("Reversed string sent.\n");
+    printf("Factorial: %llu\n", fact);
+    printf("Result sent to client.\n");
 
     close(sockfd);
 
@@ -80,19 +68,19 @@ int main()
 
 
 //client.c
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
 #define PORT 8080
-#define MAX 1024
 
 int main()
 {
-    int sockfd;
-    char message[MAX];
-    char buffer[MAX];
+    int sockfd, num;
+    unsigned long long fact;
+
     struct sockaddr_in server_addr;
     socklen_t len = sizeof(server_addr);
 
@@ -102,21 +90,22 @@ int main()
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    printf("Enter a string:\n");
-    fgets(message, MAX, stdin);
+    printf("Enter a number:\n");
+    scanf("%d", &num);
 
-    sendto(sockfd, message, strlen(message) + 1, 0,
+    sendto(sockfd, &num, sizeof(num), 0,
            (struct sockaddr *)&server_addr, len);
 
-    recvfrom(sockfd, buffer, MAX, 0,
+    recvfrom(sockfd, &fact, sizeof(fact), 0,
              (struct sockaddr *)&server_addr, &len);
 
-    printf("\nReversed String: %s\n", buffer);
+    printf("\nFactorial = %llu\n", fact);
 
     close(sockfd);
 
     return 0;
 }
+
 
 
 </script>

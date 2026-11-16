@@ -18,62 +18,97 @@
 
   <script type="text/plain" id="raw-code">
    
+
     
-from sklearn.datasets import fetch_20newsgroups
-from sklearn.feature_extraction.text import CountVectorizer
-import numpy as np
+//server.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-# Select two categories
-categories = ['alt.atheism', 'soc.religion.christian']
+#define PORT 8080
+#define MAX 1024
 
-# Load dataset
-newsgroups = fetch_20newsgroups(
-    subset='train',
-    categories=categories
-)
+int main()
+{
+    int sockfd, i = 0;
+    char str[MAX];
 
-# Convert text into word counts
-vectorizer = CountVectorizer(stop_words='english')
-X = vectorizer.fit_transform(newsgroups.data)
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len = sizeof(client_addr);
 
-# Select one category
-category = 'alt.atheism'
-category_index = newsgroups.target_names.index(category)
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-# Get word counts for selected category
-X_category = X[newsgroups.target == category_index]
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-word_counts = np.asarray(X_category.sum(axis=0)).flatten()
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-# Vocabulary
-words = vectorizer.get_feature_names_out()
+    printf("UDP Server Running\n");
 
-# Total word count
-total_words = word_counts.sum()
-vocab_size = len(words)
+    recvfrom(sockfd, str, MAX, 0,
+             (struct sockaddr *)&client_addr, &len);
 
-# MLE probabilities
-mle_prob = word_counts / total_words
+    printf("Received string: %s\n", str);
 
-print("MLE Word Probabilities:")
-for word in ['god', 'religion', 'atheism', 'people']:
-    index = np.where(words == word)[0]
-    if len(index) > 0:
-        print(word, ":", mle_prob[index[0]])
+    while(str[i] != '\0' && str[i] != '\n')
+    {
+        i++;
+    }
 
-# MAP probabilities using Dirichlet priors
-for alpha in [0.5, 1, 2]:
+    printf("Length of string: %d\n", i);
 
-    map_prob = (word_counts + alpha) / (
-        total_words + alpha * vocab_size
-    )
+    sendto(sockfd, &i, sizeof(i), 0,
+           (struct sockaddr *)&client_addr, len);
 
-    print("\nMAP Probabilities (alpha =", alpha, "):")
+    printf("Length sent to client.\n");
 
-    for word in ['god', 'religion', 'atheism', 'people']:
-        index = np.where(words == word)[0]
-        if len(index) > 0:
-            print(word, ":", map_prob[index[0]])
+    close(sockfd);
+
+    return 0;
+}
+
+
+//client.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+#define MAX 1024
+
+int main()
+{
+    int sockfd, length;
+    char str[MAX];
+
+    struct sockaddr_in server_addr;
+    socklen_t len = sizeof(server_addr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter a string:\n");
+    fgets(str, MAX, stdin);
+
+    sendto(sockfd, str, sizeof(str), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    recvfrom(sockfd, &length, sizeof(length), 0,
+             (struct sockaddr *)&server_addr, &len);
+
+    printf("\nLength of string = %d\n", length);
+
+    close(sockfd);
+
+    return 0;
+}
+
 
 
 </script>

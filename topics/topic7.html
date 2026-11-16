@@ -21,7 +21,6 @@
 	
 //server.c
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -31,9 +30,9 @@
 
 int main()
 {
-    int sockfd;
-    int r, c;
+    int sockfd, r, c;
     int a[MAX][MAX], b[MAX][MAX], sum[MAX][MAX];
+
     struct sockaddr_in server_addr, client_addr;
     socklen_t len = sizeof(client_addr);
 
@@ -45,7 +44,7 @@ int main()
 
     bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-    printf("UDP Server Running...\n");
+    printf("UDP Server Running\n");
 
     recvfrom(sockfd, &r, sizeof(r), 0,
              (struct sockaddr *)&client_addr, &len);
@@ -59,25 +58,14 @@ int main()
     recvfrom(sockfd, b, r * c * sizeof(int), 0,
              (struct sockaddr *)&client_addr, &len);
 
-    printf("Received Matrix A:\n");
+    printf("Matrix Addition:\n");
 
     for(int i = 0; i < r; i++)
     {
         for(int j = 0; j < c; j++)
         {
-            printf("%d ", a[i][j]);
-        }
-        printf("\n");
-    }
-
-    printf("Received Matrix B:\n");
-
-    for(int i = 0; i < r; i++)
-    {
-        for(int j = 0; j < c; j++)
-        {
-            printf("%d ", b[i][j]);
             sum[i][j] = a[i][j] + b[i][j];
+            printf("%d ", sum[i][j]);
         }
         printf("\n");
     }
@@ -85,17 +73,17 @@ int main()
     sendto(sockfd, sum, r * c * sizeof(int), 0,
            (struct sockaddr *)&client_addr, len);
 
-    printf("Matrix Addition Result Sent.\n");
+    printf("Result sent to client.\n");
 
     close(sockfd);
 
     return 0;
 }
 
+
 //client.c
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -105,9 +93,9 @@ int main()
 
 int main()
 {
-    int sockfd;
-    int r, c;
+    int sockfd, r, c;
     int a[MAX][MAX], b[MAX][MAX], sum[MAX][MAX];
+
     struct sockaddr_in server_addr;
     socklen_t len = sizeof(server_addr);
 
@@ -117,7 +105,7 @@ int main()
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    printf("Enter number of rows and columns:\n");
+    printf("Enter rows and columns:\n");
     scanf("%d%d", &r, &c);
 
     printf("Enter Matrix A:\n");
@@ -155,7 +143,7 @@ int main()
     recvfrom(sockfd, sum, r * c * sizeof(int), 0,
              (struct sockaddr *)&server_addr, &len);
 
-    printf("\nMatrix Addition Result:\n");
+    printf("\nResultant Matrix:\n");
 
     for(int i = 0; i < r; i++)
     {
@@ -170,6 +158,8 @@ int main()
 
     return 0;
 }
+
+
 
 
 
