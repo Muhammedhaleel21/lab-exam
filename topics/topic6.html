@@ -18,42 +18,111 @@
 
   <script type="text/plain" id="raw-code">
 	
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression, RidgeCV, LassoCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, r2_score
+//server.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-data = pd.read_csv("diabetes.csv")
+#define PORT 8080
+#define MAX 1024
 
-X = data.iloc[:, :-1]
-y = data.iloc[:, -1]
+int main()
+{
+    int sockfd;
+    int n, arr[MAX], sum = 0;
+    float avg;
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len = sizeof(client_addr);
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y, test_size=0.2, random_state=42
-)
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-lin = LinearRegression().fit(X_train, y_train)
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-ridge = RidgeCV(alphas=[0.1, 1.0, 10.0]).fit(X_train, y_train)
+    printf("UDP Server Running...\n");
 
-lasso = LassoCV(cv=5).fit(X_train, y_train)
+    recvfrom(sockfd, &n, sizeof(n), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-for name, model in [
-    ('Linear', lin),
-    ('Ridge', ridge),
-    ('Lasso', lasso)
-]:
-	pred = model.predict(X_test)
+    recvfrom(sockfd, arr, n * sizeof(int), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-	print(
-        	f"{name} - MSE: {mean_squared_error(y_test, pred):.2f}, "
-        	f"R2: {r2_score(y_test, pred):.2f}"
-    	)
+    printf("Received numbers:\n");
+
+    for(int i = 0; i < n; i++)
+    {
+        printf("%d ", arr[i]);
+        sum += arr[i];
+    }
+
+    avg = (float)sum / n;
+
+    printf("\nAverage = %.2f\n", avg);
+
+    sendto(sockfd, &avg, sizeof(avg), 0,
+           (struct sockaddr *)&client_addr, len);
+
+    printf("Average sent to client.\n");
+
+    close(sockfd);
+
+    return 0;
+}
+
+
+
+//client.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+#define MAX 1024
+
+int main()
+{
+    int sockfd;
+    int n, arr[MAX];
+    float avg;
+    struct sockaddr_in server_addr;
+    socklen_t len = sizeof(server_addr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter number of elements:\n");
+    scanf("%d", &n);
+
+    printf("Enter numbers:\n");
+
+    for(int i = 0; i < n; i++)
+    {
+        scanf("%d", &arr[i]);
+    }
+
+    sendto(sockfd, &n, sizeof(n), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    sendto(sockfd, arr, n * sizeof(int), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    recvfrom(sockfd, &avg, sizeof(avg), 0,
+             (struct sockaddr *)&server_addr, &len);
+
+    printf("\nAverage = %.2f\n", avg);
+
+    close(sockfd);
+
+    return 0;
+}
 
 
 </script>

@@ -17,85 +17,107 @@
   </div>
 
   <script type="text/plain" id="raw-code">
-    import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, confusion_matrix
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-# 1. Load dataset
-data = pd.read_csv("/content/20NewsGroups1.csv")
 
-data = data.dropna(subset=['category'])
-data['text'] = data['text'].fillna('')
+//server.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-# Select 4 categories
-categories = ['sci.space', 'rec.autos',
-              'comp.graphics', 'talk.politics.misc']
+#define PORT 8080
+#define MAX 1024
 
-data = data[data['category'].isin(categories)]
+int main()
+{
+    int sockfd;
+    char buffer[MAX];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len = sizeof(client_addr);
 
-x = data['text']
-y = data['category']
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-# 2. Split dataset
-x_train, x_test, y_train, y_test = train_test_split(
-    x, y, test_size=0.2, random_state=42, stratify=y
-)
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-# 3. Convert text into word counts
-vec = CountVectorizer()
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-X_train = vec.fit_transform(x_train)
-X_test = vec.transform(x_test)
+    printf("UDP Server Running\n");
 
-# 4. Train models with different alpha values
-alphas = [0.1, 1, 10]
+    recvfrom(sockfd, buffer, MAX, 0,
+             (struct sockaddr *)&client_addr, &len);
 
-models = {}
-accuracies = {}
+    buffer[strcspn(buffer, "\n")] = '\0';
 
-for alpha in alphas:
+    printf("Received: %s\n", buffer);
 
-    model = MultinomialNB(alpha=alpha)
-    model.fit(X_train, y_train)
+    int i, j;
+    char temp;
 
-    pred = model.predict(X_test)
+    i = 0;
+    j = strlen(buffer) - 1;
 
-    acc = accuracy_score(y_test, pred)
+    while(i < j)
+    {
+        temp = buffer[i];
+        buffer[i] = buffer[j];
+        buffer[j] = temp;
 
-    models[alpha] = model
-    accuracies[alpha] = acc
+        i++;
+        j--;
+    }
 
-    print("Alpha:", alpha)
-    print("Accuracy:", acc)
-    print()
+    sendto(sockfd, buffer, strlen(buffer) + 1, 0,
+           (struct sockaddr *)&client_addr, len);
 
-# 5. Find the best model
-best_alpha = max(accuracies, key=accuracies.get)
+    printf("Reversed string sent.\n");
 
-best_model = models[best_alpha]
+    close(sockfd);
 
-print("Best Alpha:", best_alpha)
-print("Best Accuracy:", accuracies[best_alpha])
+    return 0;
+}
 
-# 6. Predict using the best model
-best_pred = best_model.predict(X_test)
 
-# 7. Display confusion matrix
-cm = confusion_matrix(y_test, best_pred, labels=best_model.classes_)
+//client.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-sns.heatmap(cm, annot=True, fmt='d',
-            xticklabels=best_model.classes_,
-            yticklabels=best_model.classes_,
-            cmap='Blues')
+#define PORT 8080
+#define MAX 1024
 
-plt.xlabel("Predicted")
-plt.ylabel("Actual")
-plt.title("Confusion Matrix - Best Multinomial Naive Bayes")
-plt.show()
+int main()
+{
+    int sockfd;
+    char message[MAX];
+    char buffer[MAX];
+    struct sockaddr_in server_addr;
+    socklen_t len = sizeof(server_addr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter a string:\n");
+    fgets(message, MAX, stdin);
+
+    sendto(sockfd, message, strlen(message) + 1, 0,
+           (struct sockaddr *)&server_addr, len);
+
+    recvfrom(sockfd, buffer, MAX, 0,
+             (struct sockaddr *)&server_addr, &len);
+
+    printf("\nReversed String: %s\n", buffer);
+
+    close(sockfd);
+
+    return 0;
+}
+
 
 </script>
 

@@ -18,65 +18,90 @@
 
   <script type="text/plain" id="raw-code">
     
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB, BernoulliNB
-from sklearn.metrics import accuracy_score, f1_score
-import pandas as pd
+//server.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-# Load dataset
-data = pd.read_csv("/content/20NewsGroups1.csv")
+#define PORT 8080
 
-# Select 4 categories
-categories = ['sci.space', 'rec.autos',
-              'comp.graphics', 'talk.politics.misc']
+int main()
+{
+    int sockfd, num;
+    char result[50];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len = sizeof(client_addr);
 
-filtered_data = data[data['category'].isin(categories)]
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-x = filtered_data['text']
-y = filtered_data['category']
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-# Split dataset
-x_train, x_test, y_train, y_test = train_test_split(
-    x, y, test_size=0.2, random_state=42, stratify=y
-)
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-# Multinomial Vectorizer
-vec_multi = CountVectorizer()
-X_train_m = vec_multi.fit_transform(x_train)
-X_test_m = vec_multi.transform(x_test)
+    printf("UDP Server Running...\n");
 
-# Bernoulli Vectorizer
-vec_bern = CountVectorizer(binary=True)
-X_train_b = vec_bern.fit_transform(x_train)
-X_test_b = vec_bern.transform(x_test)
+    recvfrom(sockfd, &num, sizeof(num), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-# Train models
-m_nb = MultinomialNB().fit(X_train_m, y_train)
-b_nb = BernoulliNB().fit(X_train_b, y_train)
+    printf("Received number: %d\n", num);
 
-# Predictions
-m_pred = m_nb.predict(X_test_m)
-b_pred = b_nb.predict(X_test_b)
+    if(num % 2 == 0)
+        strcpy(result, "Even");
+    else
+        strcpy(result, "Odd");
 
-# Compare Accuracy and F1-score
-print("Multinomial Naive Bayes")
-print("Accuracy:", accuracy_score(y_test, m_pred))
-print("F1 Score:", f1_score(y_test, m_pred, average='macro'))
+    sendto(sockfd, result, strlen(result) + 1, 0,
+           (struct sockaddr *)&client_addr, len);
 
-print("\nBernoulli Naive Bayes")
-print("Accuracy:", accuracy_score(y_test, b_pred))
-print("F1 Score:", f1_score(y_test, b_pred, average='macro'))
+    printf("Result sent to client.\n");
 
-# Predict a new sentence
-new_text = ["NASA is planning a new mission to explore Mars and space."]
+    close(sockfd);
 
-new_m = vec_multi.transform(new_text)
-new_b = vec_bern.transform(new_text)
+    return 0;
+}
 
-print("\nNew Sentence Prediction")
-print("Multinomial Prediction:", m_nb.predict(new_m)[0])
-print("Bernoulli Prediction:", b_nb.predict(new_b)[0])
+
+//client.c
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+
+int main()
+{
+    int sockfd, num;
+    char buffer[50];
+    struct sockaddr_in server_addr;
+    socklen_t len = sizeof(server_addr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter a number:\n");
+    scanf("%d", &num);
+
+    sendto(sockfd, &num, sizeof(num), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    recvfrom(sockfd, buffer, sizeof(buffer), 0,
+             (struct sockaddr *)&server_addr, &len);
+
+    printf("\nResult: %s\n", buffer);
+
+    close(sockfd);
+
+    return 0;
+}
+
 
 </script>
 

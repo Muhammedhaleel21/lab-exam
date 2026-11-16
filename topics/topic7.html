@@ -19,61 +19,158 @@
   <script type="text/plain" id="raw-code">
 
 	
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+//server.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression, RidgeCV, LassoCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, r2_score
+#define PORT 8080
+#define MAX 20
 
-# 1. Load the dataset
-data = pd.read_csv(r"C:\Users\Farisa\Downloads\archive (1)\diabetes.csv")
+int main()
+{
+    int sockfd;
+    int r, c;
+    int a[MAX][MAX], b[MAX][MAX], sum[MAX][MAX];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len = sizeof(client_addr);
 
-# Last column is the target
-X = data.iloc[:, :-1]
-y = data.iloc[:, -1]
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-# 2. Split the dataset
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-# 3. Standardize the data
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-# 4. Linear Regression
-lin = LinearRegression().fit(X_train, y_train)
+    printf("UDP Server Running...\n");
 
-# 5. Ridge and Lasso Regression
-ridge = RidgeCV(alphas=[0.1, 1.0, 10.0]).fit(X_train, y_train)
-lasso = LassoCV(cv=5).fit(X_train, y_train)
+    recvfrom(sockfd, &r, sizeof(r), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-# 6. Compare the models
-for name, model in [('Linear', lin), ('Ridge', ridge),
-                    ('Lasso', lasso)]:
+    recvfrom(sockfd, &c, sizeof(c), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-    pred = model.predict(X_test)
+    recvfrom(sockfd, a, r * c * sizeof(int), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-    print(f"{name} - MSE: {mean_squared_error(y_test, pred):.2f}, R2: {r2_score(y_test, pred):.2f}")
+    recvfrom(sockfd, b, r * c * sizeof(int), 0,
+             (struct sockaddr *)&client_addr, &len);
 
-# 7. Plot Actual vs Predicted Values
-for name, model in [('Linear', lin), ('Ridge', ridge),
-                    ('Lasso', lasso)]:
+    printf("Received Matrix A:\n");
 
-    pred = model.predict(X_test)
+    for(int i = 0; i < r; i++)
+    {
+        for(int j = 0; j < c; j++)
+        {
+            printf("%d ", a[i][j]);
+        }
+        printf("\n");
+    }
 
-    plt.figure()
-    plt.scatter(y_test, pred)
-    plt.xlabel("Actual Values")
-    plt.ylabel("Predicted Values")
-    plt.title(name + " Regression")
-    plt.plot([y_test.min(), y_test.max()],
-             [y_test.min(), y_test.max()], 'r--')
-    plt.show()
+    printf("Received Matrix B:\n");
+
+    for(int i = 0; i < r; i++)
+    {
+        for(int j = 0; j < c; j++)
+        {
+            printf("%d ", b[i][j]);
+            sum[i][j] = a[i][j] + b[i][j];
+        }
+        printf("\n");
+    }
+
+    sendto(sockfd, sum, r * c * sizeof(int), 0,
+           (struct sockaddr *)&client_addr, len);
+
+    printf("Matrix Addition Result Sent.\n");
+
+    close(sockfd);
+
+    return 0;
+}
+
+//client.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+#define MAX 20
+
+int main()
+{
+    int sockfd;
+    int r, c;
+    int a[MAX][MAX], b[MAX][MAX], sum[MAX][MAX];
+    struct sockaddr_in server_addr;
+    socklen_t len = sizeof(server_addr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter number of rows and columns:\n");
+    scanf("%d%d", &r, &c);
+
+    printf("Enter Matrix A:\n");
+
+    for(int i = 0; i < r; i++)
+    {
+        for(int j = 0; j < c; j++)
+        {
+            scanf("%d", &a[i][j]);
+        }
+    }
+
+    printf("Enter Matrix B:\n");
+
+    for(int i = 0; i < r; i++)
+    {
+        for(int j = 0; j < c; j++)
+        {
+            scanf("%d", &b[i][j]);
+        }
+    }
+
+    sendto(sockfd, &r, sizeof(r), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    sendto(sockfd, &c, sizeof(c), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    sendto(sockfd, a, r * c * sizeof(int), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    sendto(sockfd, b, r * c * sizeof(int), 0,
+           (struct sockaddr *)&server_addr, len);
+
+    recvfrom(sockfd, sum, r * c * sizeof(int), 0,
+             (struct sockaddr *)&server_addr, &len);
+
+    printf("\nMatrix Addition Result:\n");
+
+    for(int i = 0; i < r; i++)
+    {
+        for(int j = 0; j < c; j++)
+        {
+            printf("%d\t", sum[i][j]);
+        }
+        printf("\n");
+    }
+
+    close(sockfd);
+
+    return 0;
+}
+
 
 
 </script>

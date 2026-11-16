@@ -19,93 +19,112 @@
   <script type="text/plain" id="raw-code">
     
 
-import pandas as pd
-import matplotlib.pyplot as plt
+//server.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, plot_tree
-from sklearn.metrics import accuracy_score
+#define PORT 8080
+#define MAX 1024
 
-# 1. Load dataset
-data = pd.read_csv("Online Retail.csv")
+int main()
+{
+    int sockfd;
+    char buffer[MAX];
+    char result[50];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t len = sizeof(client_addr);
 
-# Remove missing values
-data = data.dropna()
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-# Remove invalid transactions
-data = data[(data["Quantity"] > 0) & (data["UnitPrice"] > 0)]
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
 
-# Calculate total spending
-data["TotalAmount"] = data["Quantity"] * data["UnitPrice"]
+    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-# 2. Calculate customer spending and number of orders
-customer = data.groupby("CustomerID").agg({
-    "TotalAmount": "sum",
-    "InvoiceNo": "nunique"
-}).reset_index()
+    printf("UDP Server Running\n");
 
-customer.columns = ["CustomerID", "TotalSpending", "NumOrders"]
+    recvfrom(sockfd, buffer, MAX, 0,
+             (struct sockaddr *)&client_addr, &len);
 
-print(customer.head())
+    buffer[strcspn(buffer, "\n")] = '\0';
 
-# 3. Classify customers as High-value or Low-value
-threshold = customer["TotalSpending"].median()
+    printf("Received: %s\n", buffer);
 
-customer["Value"] = customer["TotalSpending"].apply(
-    lambda x: "High" if x >= threshold else "Low"
-)
+    int i, j, flag = 1;
 
-# Features and target
-X = customer[["TotalSpending", "NumOrders"]]
-y = customer["Value"]
+    i = 0;
+    j = strlen(buffer) - 1;
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+    while(i < j)
+    {
+        if(buffer[i] != buffer[j])
+        {
+            flag = 0;
+            break;
+        }
 
-# 4. Train Decision Trees with different depths
-depths = [2, 3, 5]
-best_accuracy = 0
-best_model = None
+        i++;
+        j--;
+    }
 
-for depth in depths:
+    if(flag == 1)
+        strcpy(result, "Palindrome");
+    else
+        strcpy(result, "Not Palindrome");
 
-    model = DecisionTreeClassifier(
-        criterion="entropy",
-        max_depth=depth,
-        random_state=42
-    )
+    sendto(sockfd, result, strlen(result) + 1, 0,
+           (struct sockaddr *)&client_addr, len);
 
-    model.fit(X_train, y_train)
+    printf("Result sent.\n");
 
-    y_pred = model.predict(X_test)
+    close(sockfd);
 
-    accuracy = accuracy_score(y_test, y_pred)
+    return 0;
+}
 
-    print("Depth:", depth)
-    print("Accuracy:", accuracy)
 
-    # Find best model
-    if accuracy > best_accuracy:
-        best_accuracy = accuracy
-        best_model = model
+//client.c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-# 5. Plot the best Decision Tree
-print("\nBest Accuracy:", best_accuracy)
+#define PORT 8080
+#define MAX 1024
 
-plt.figure(figsize=(14, 8))
+int main()
+{
+    int sockfd;
+    char message[MAX];
+    char buffer[MAX];
+    struct sockaddr_in server_addr;
+    socklen_t len = sizeof(server_addr);
 
-plot_tree(
-    best_model,
-    feature_names=X.columns,
-    class_names=best_model.classes_,
-    filled=True,
-    rounded=True
-)
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-plt.title("Best Decision Tree - Online Retail Dataset")
-plt.show()
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter a string:\n");
+    fgets(message, MAX, stdin);
+
+    sendto(sockfd, message, strlen(message) + 1, 0,
+           (struct sockaddr *)&server_addr, len);
+
+    recvfrom(sockfd, buffer, MAX, 0,
+             (struct sockaddr *)&server_addr, &len);
+
+    printf("\nResult: %s\n", buffer);
+
+    close(sockfd);
+
+    return 0;
+}
+
 
 
 </script>
